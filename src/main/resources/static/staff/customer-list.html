@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Khách hàng được phân công</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f8fafc;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #2563eb;
+            color: white;
+        }
+
+        .top-bar {
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 16px;
+            border: none;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+
+        .logout {
+            background: #dc2626;
+        }
+
+        .empty {
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="top-bar">
+    <a class="btn" href="/staff/building-list.html">Tòa nhà của tôi</a>
+    <a class="btn" href="/staff/profile.html">Thông tin cá nhân</a>
+    <a class="btn logout" href="/logout">Đăng xuất</a>
+</div>
+
+<h2>Khách hàng được phân công</h2>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Họ tên</th>
+        <th>Số điện thoại</th>
+        <th>Email</th>
+        <th>Thao tác</th>
+    </tr>
+    </thead>
+    <tbody id="customerTable"></tbody>
+</table>
+
+<div id="emptyBox" class="empty">
+    Bạn chưa được phân công khách hàng nào.
+</div>
+
+<script>
+    function loadMyCustomers() {
+        fetch("/api/staff/customers")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Khong tai duoc danh sach khach hang");
+                }
+                return response.json();
+            })
+            .then(data => {
+                const tbody = document.getElementById("customerTable");
+                const emptyBox = document.getElementById("emptyBox");
+                tbody.innerHTML = "";
+
+                if (!data || data.length === 0) {
+                    emptyBox.style.display = "block";
+                    return;
+                }
+
+                emptyBox.style.display = "none";
+
+                data.forEach(item => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${item.id ?? ""}</td>
+                        <td>${item.fullName ?? ""}</td>
+                        <td>${item.phone ?? ""}</td>
+                        <td>${item.email ?? ""}</td>
+                        <td>
+                            <a class="btn" href="/staff/customer-detail.html?id=${item.id}">Xem</a>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                alert(error.message);
+            });
+    }
+
+    window.onload = loadMyCustomers;
+</script>
+</body>
+</html>

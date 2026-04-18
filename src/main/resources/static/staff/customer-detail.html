@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết khách hàng</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f8fafc;
+        }
+
+        .top-bar {
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 16px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-right: 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .logout {
+            background: #dc2626;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        textarea, select {
+            width: 100%;
+            margin-top: 8px;
+            margin-bottom: 16px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #2563eb;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<div class="top-bar">
+    <a class="btn" href="/staff/customer-list.html">Quay lại danh sách khách hàng</a>
+    <a class="btn logout" href="/logout">Đăng xuất</a>
+</div>
+
+<div class="card">
+    <h2>Thêm giao dịch / chăm sóc</h2>
+
+    <label for="transactionTypeId">Loại giao dịch</label>
+    <select id="transactionTypeId">
+        <option value="1">Chăm sóc</option>
+        <option value="2">Dẫn đi xem</option>
+        <option value="3">Tư vấn</option>
+    </select>
+
+    <label for="note">Nội dung</label>
+    <textarea id="note" rows="4"></textarea>
+
+    <button class="btn" onclick="saveTransaction()">Lưu giao dịch</button>
+</div>
+
+<div class="card">
+    <h2>Lịch sử giao dịch</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Loại</th>
+            <th>Nội dung</th>
+        </tr>
+        </thead>
+        <tbody id="transactionTable"></tbody>
+    </table>
+</div>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const customerId = params.get("id");
+
+    function loadTransactions() {
+        fetch(`/api/staff/customers/${customerId}/transactions`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Khong tai duoc lich su giao dich");
+                }
+                return response.json();
+            })
+            .then(data => {
+                const tbody = document.getElementById("transactionTable");
+                tbody.innerHTML = "";
+
+                data.forEach(item => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${item.id ?? ""}</td>
+                        <td>${item.transactionTypeName ?? ""}</td>
+                        <td>${item.note ?? ""}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                alert(error.message);
+            });
+    }
+
+    function saveTransaction() {
+        const transactionTypeId = document.getElementById("transactionTypeId").value;
+        const note = document.getElementById("note").value.trim();
+
+        fetch("/api/staff/transactions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                customerId: Number(customerId),
+                transactionTypeId: Number(transactionTypeId),
+                note: note
+            })
+        })
+            .then(response => response.text())
+            .then(message => {
+                alert(message);
+                document.getElementById("note").value = "";
+                loadTransactions();
+            })
+            .catch(error => {
+                alert(error.message);
+            });
+    }
+
+    loadTransactions();
+</script>
+</body>
+</html>

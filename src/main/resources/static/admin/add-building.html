@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add building</title>
+</head>
+<body>
+<h2 id="form-title">Thêm tòa nhà</h2>
+<p><strong>Lưu ý:</strong> Các trường có dấu * là bắt buộc.</p>
+
+<form id="building-form">
+    <label>Tên tòa nhà (*):</label><br>
+    <input type="text" id="name" required><br>
+
+    <label>Đường:</label><br>
+    <input type="text" id="street"><br>
+
+    <label>Phường:</label><br>
+    <input type="text" id="ward"><br>
+    <label>Quận (*):</label><br>
+    <select id="districtId" required>
+        <option value="1">Quận 1</option>
+        <option value="2">Quận 2</option>
+        <option value="3">Quận 4</option>
+    </select><br>
+
+    <label>Số tầng hầm:</label><br>
+    <input type="number" id="numberOfBasement"><br>
+
+    <label>Diện tích sàn:</label><br>
+    <input type="number" id="floorArea"><br>
+
+    <label>Giá thuê (*):</label><br>
+    <input type="number" id="rentPrice" required><br>
+    <label>Mô tả giá thuê:</label><br>
+    <input type="text" id="rentPriceDescription"><br>
+
+    <label>Tiền cọc:</label><br>
+    <input type="text" id="deposit"><br>
+
+    <label>Thanh toán:</label><br>
+    <input type="text" id="payment"><br>
+
+    <label>Thời hạn thuê:</label><br>
+    <input type="text" id="rentTime"><br>
+
+    <label>Phí môi giới:</label><br>
+    <input type="number" step="0.01" id="brokerageFee"><br>
+    <label>Ghi chú:</label><br>
+    <input type="text" id="note"><br>
+
+    <label>Ảnh:</label><br>
+    <input type="text" id="image">
+    <small>Có thể để trống. Nhập đường dẫn ảnh, ví dụ: /images/test.jpg</small><br><br>
+
+    <label>Quản lý:</label><br>
+    <input type="text" id="managerName"><br>
+
+    <label>SĐT quản lý:</label><br>
+    <input type="text" id="managerPhoneNumber"><br>
+    <button type="button" id="save-building">Lưu tòa nhà</button>
+    <a href="/admin/building-list.html">
+        <button type="button">Quay lại</button>
+    </a>
+</form>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const buildingId = urlParams.get('id');
+    if (buildingId) {
+        document.getElementById('form-title').innerText = 'Sửa tòa nhà';
+        document.getElementById('save-building').innerText = 'Cập nhật tòa nhà';
+    }
+
+    document.getElementById('save-building').addEventListener('click', saveBuilding);
+    loadBuildingDetail();
+
+    function saveBuilding() {
+        const name = document.getElementById('name').value.trim();
+        const street = document.getElementById('street').value.trim();
+        const ward = document.getElementById('ward').value.trim();
+        const districtId = document.getElementById('districtId').value;
+        const numberOfBasement = document.getElementById('numberOfBasement').value;
+        const floorArea = document.getElementById('floorArea').value;
+        const rentPrice = document.getElementById('rentPrice').value;
+        const rentPriceDescription = document.getElementById('rentPriceDescription').value.trim();
+        const deposit = document.getElementById('deposit').value.trim();
+        const payment = document.getElementById('payment').value.trim();
+        const rentTime = document.getElementById('rentTime').value.trim();
+        const brokerageFee = document.getElementById('brokerageFee').value;
+        const note = document.getElementById('note').value.trim();
+        const image = document.getElementById('image').value.trim();
+        const managerName = document.getElementById('managerName').value.trim();
+        const managerPhoneNumber = document.getElementById('managerPhoneNumber').value.trim();
+
+        if (name === '') {
+            alert('Tên tòa nhà là trường bắt buộc.');
+            return;
+        }
+
+        if (districtId === '') {
+            alert('Quận là trường bắt buộc.');
+            return;
+        }
+
+        if (rentPrice === '') {
+            alert('Giá thuê là trường bắt buộc.');
+            return;
+        }
+        const building = {
+            name: name,
+            street: street || null,
+            ward: ward || null,
+            districtId: parseInt(districtId),
+            numberOfBasement: numberOfBasement ? parseInt(numberOfBasement) : null,
+            floorArea: floorArea ? parseInt(floorArea) : null,
+            rentPrice: parseInt(rentPrice),
+            rentPriceDescription: rentPriceDescription || null,
+            deposit: deposit || null,
+            payment: payment || null,
+            rentTime: rentTime || null,
+            brokerageFee: brokerageFee || null,
+            note: note || null,
+            image: image || null,
+            managerName: managerName || null,
+            managerPhoneNumber: managerPhoneNumber || null
+        };
+        const url = buildingId
+            ? `http://localhost:8081/api/building/${buildingId}`
+            : "http://localhost:8081/api/building";
+
+        const method = buildingId ? "PUT" : "POST";
+
+        fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(building)
+        })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                window.location.href = "/admin/building-list.html";
+
+            })
+            .catch(error => {
+                alert("Có lỗi xảy ra: " + error.message);
+            });
+    }
+
+
+    function loadBuildingDetail() {
+        if (!buildingId) return;
+
+        fetch(`http://localhost:8081/api/building/${buildingId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Không lấy được chi tiết tòa nhà");
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('name').value = data.name ?? '';
+                document.getElementById('street').value = data.street ?? '';
+                document.getElementById('ward').value = data.ward ?? '';
+                document.getElementById('districtId').value = data.districtId ?? '1';
+                document.getElementById('rentPrice').value = data.rentPrice ?? '';
+                document.getElementById('numberOfBasement').value = data.numberOfBasement ?? '';
+                document.getElementById('floorArea').value = data.floorArea ?? '';
+                document.getElementById('rentPriceDescription').value = data.rentPriceDescription ?? '';
+                document.getElementById('deposit').value = data.deposit ?? '';
+                document.getElementById('payment').value = data.payment ?? '';
+                document.getElementById('rentTime').value = data.rentTime ?? '';
+                document.getElementById('brokerageFee').value = data.brokerageFee ?? '';
+                document.getElementById('note').value = data.note ?? '';
+                document.getElementById('image').value = data.image ?? '';
+                document.getElementById('managerName').value = data.managerName ?? '';
+                document.getElementById('managerPhoneNumber').value = data.managerPhoneNumber ?? '';
+            })
+            .catch(error => {
+                alert("Lỗi tải dữ liệu: " + error.message);
+            });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách tòa nhà được phân công</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f8fafc;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #2563eb;
+            color: white;
+        }
+
+        .top-bar {
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            background: #dc2626;
+            color: white;
+            cursor: pointer;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+
+        .empty {
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="top-bar">
+    <a class="btn" href="/staff/building-list.html">Tòa nhà của tôi</a>
+    <a class="btn" href="/staff/customer-list.html">Khách hàng</a>
+    <a class="btn" href="/staff/profile.html">Thông tin cá nhân</a>
+    <a class="btn" href="/logout">Đăng xuất</a>
+</div>
+
+<h2>Tòa nhà được phân công cho tôi</h2>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Tên tòa nhà</th>
+        <th>Địa chỉ</th>
+        <th>Diện tích thuê</th>
+        <th>Giá thuê</th>
+        <th>Quản lý</th>
+        <th>SĐT quản lý</th>
+    </tr>
+    </thead>
+    <tbody id="buildingTable"></tbody>
+</table>
+
+<div id="emptyBox" class="empty" style="display:none;">
+    Bạn chưa được phân công tòa nhà nào.
+</div>
+
+<script>
+    function loadMyBuildings() {
+        fetch("/api/staff/buildings")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Khong tai duoc danh sach toa nha");
+                }
+                return response.json();
+            })
+            .then(data => {
+                const tbody = document.getElementById("buildingTable");
+                const emptyBox = document.getElementById("emptyBox");
+                tbody.innerHTML = "";
+
+                if (!data || data.length === 0) {
+                    emptyBox.style.display = "block";
+                    return;
+                }
+
+                emptyBox.style.display = "none";
+
+                data.forEach(item => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${item.id ?? ""}</td>
+                        <td>${item.name ?? ""}</td>
+                        <td>${item.address ?? ""}</td>
+                        <td>${item.rentAreas ?? ""}</td>
+                        <td>${item.rentPrice ?? ""}</td>
+                        <td>${item.managerName ?? ""}</td>
+                        <td>${item.managerPhoneNumber ?? ""}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                alert(error.message);
+            });
+    }
+
+    window.onload = loadMyBuildings;
+</script>
+</body>
+</html>

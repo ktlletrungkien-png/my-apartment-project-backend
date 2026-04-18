@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Building Management</title>
+</head>
+<body>
+<div style="margin-bottom: 20px;">
+    <a href="/admin/profile.html">
+        <button>Thông tin cá nhân</button>
+    </a>
+    <a href="/logout">
+        <button>Đăng xuất</button>
+    </a>
+</div>
+<h1>Quản lý tòa nhà</h1>
+<div style="margin-bottom: 20px;">
+    <a href="/admin/add-building.html">
+        <button>Thêm tòa nhà</button>
+    </a>
+</div>
+<h2>Danh sách tòa nhà</h2>
+
+<div style="margin-bottom: 20px;">
+    <input type="text" id="name" placeholder="Tên tòa nhà">
+    <input type="text" id="address" placeholder="Địa chỉ">
+    <input type="number" id="rentArea" placeholder="Diện tích thuê">
+    <input type="number" id="rentPriceFrom" placeholder="Giá thuê từ">
+    <input type="number" id="rentPriceTo" placeholder="Giá thuê đến">
+    <input type="text" id="staffName" placeholder="Tên nhân viên">
+    <button onclick="displayBuildings()">Tìm kiếm</button>
+    <button onclick="resetSearch()">Làm mới</button>
+</div>
+<table style="border: 1px solid #333333">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Tên tòa nhà</th>
+        <th>Địa chỉ</th>
+        <th>Diện tích thuê</th>
+        <th>Giá thuê</th>
+        <th>Quản lý</th>
+        <th>Nhân viên phụ trách</th>
+        <th>Thao tác</th>
+    </tr>
+    </thead>
+    <tbody id="result-table">
+    </tbody>
+
+    <script>
+        function resetSearch() {
+            document.getElementById('name').value = '';
+            document.getElementById('address').value = '';
+            document.getElementById('rentArea').value = '';
+            document.getElementById('rentPriceFrom').value = '';
+            document.getElementById('rentPriceTo').value = '';
+            document.getElementById('staffName').value = '';
+            displayBuildings();
+        }
+
+        function displayBuildings() {
+            const name = document.getElementById('name').value;
+            const address = document.getElementById('address').value;
+            const rentArea = document.getElementById('rentArea').value;
+            const rentPriceFrom = document.getElementById('rentPriceFrom').value;
+            const rentPriceTo = document.getElementById('rentPriceTo').value;
+            const staffName = document.getElementById('staffName').value;
+
+            let queryParams = new URLSearchParams();
+
+            if (name) queryParams.append('name', name);
+            if (address) queryParams.append('address', address);
+            if (rentArea) queryParams.append('rentArea', rentArea);
+            if (rentPriceFrom) queryParams.append('rentPriceFrom', rentPriceFrom);
+            if (rentPriceTo) queryParams.append('rentPriceTo', rentPriceTo);
+            if (staffName) queryParams.append('staffName', staffName);
+            fetch(`http://localhost:8081/api/building?${queryParams.toString()}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Lỗi " + response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    const tbody = document.getElementById('result-table');
+                    tbody.innerHTML = '';
+
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8">Không có dữ liệu tòa nhà</td>
+                        </tr>
+                    `;
+                        return;
+                    }
+
+                    data.forEach(item => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                        <td>${item.id ?? ""}</td>
+                        <td>${item.name ?? ""}</td>
+                        <td>${item.address ?? ""}</td>
+                        <td>${item.rentAreas ?? ""}</td>
+                        <td>${item.rentPrice ?? ""}</td>
+                        <td>${item.managerName ?? ""}</td>
+                        <td>${item.staffName ?? ""}</td>
+                        <td>
+                            <button onclick="editBuilding(${item.id})">Sửa</button>
+                            <button onclick="assignBuilding(${item.id})">Phân công</button>
+                            <button onclick="deleteBuilding(${item.id})">Xóa</button>
+                        </td>
+                    `;
+                        tbody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error("Lỗi: " + error);
+                    const tbody = document.getElementById('result-table');
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8">Không tải được dữ liệu tòa nhà</td>
+                        </tr>
+                    `;
+                });
+        }
+
+        function editBuilding(id) {
+            alert("Sửa toà nhà với ID = " + id);
+            window.location.href = `/admin/add-building.html?id=${id}`;
+        }
+
+        function deleteBuilding(id) {
+            const confirmed = confirm("Bạn có chắc muốn xóa tòa nhà này không?");
+            if (!confirmed) {
+                return;
+            }
+
+            fetch(`http://localhost:8081/api/building/${id}`, {
+                method: "DELETE"
+            })
+                .then(response => response.text())
+                .then(data => {
+                    alert(data);
+                    displayBuildings();
+                })
+                .catch(error => {
+                    alert("Có lỗi xảy ra khi xóa: " + error.message);
+                });
+        }
+        function assignBuilding(id) {
+            window.location.href = `/admin/assign-building.html?id=${id}`;
+        }
+        window.onload = displayBuildings;
+    </script>
+</table>
+</body>
+</html>

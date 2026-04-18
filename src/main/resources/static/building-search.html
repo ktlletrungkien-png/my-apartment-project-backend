@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Bất động sản - Tìm kiếm</title>
+    <style>
+        /* CSS: Thêm một chút padding và kiểu dáng cho các ô input để đẹp hơn */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 30px; background-color: #f9f9f9; }
+        h2 { color: #333; }
+        .search-box {
+            background: white;
+            margin-bottom: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .search-box input {
+            padding: 10px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 180px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background-color: #45a049; }
+
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+        th, td { border: 1px solid #eee; padding: 12px; text-align: left; }
+        th { background-color: #4CAF50; color: white; text-transform: uppercase; font-size: 14px; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        tr:hover { background-color: #e9f5e9; }
+        .no-data { text-align: center; padding: 20px; color: #888; }
+        .btn-detail {
+            padding: 5px 12px;
+            background-color: #2196F3; /* Màu xanh dương khác với nút Tìm kiếm */
+            font-size: 12px;
+        }
+        .btn-detail:hover {
+            background-color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+
+<h2>🏢 Hệ thống tìm kiếm tòa nhà</h2>
+
+<div class="search-box">
+    <input type="text" id="name" placeholder="Tên tòa nhà">
+    <input type="text" id="address" placeholder="Đường hoặc Phường">
+    <input type="number" id="rentArea" placeholder="Diện tích (m2)">
+    <input type="number" id="rentPriceFrom" placeholder="Giá thuê từ">
+    <input type="number" id="rentPriceTo" placeholder="Giá thuê đến">
+    <input type="text" id="staffName" placeholder="Tên nhân viên">
+    <button id="btnSearch">🔍 Tìm kiếm</button>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>Tên tòa nhà</th>
+        <th>Địa chỉ</th>
+        <th>Diện tích (m2)</th>
+        <th>Giá thuê</th>
+        <th>Người quản lý</th>
+        <th>Thao tác</th> </tr>
+    </tr>
+    </thead>
+    <tbody id="resultTable">
+    </tbody>
+</table>
+
+<script>
+    function searchBuildings() {
+        const tableBody = document.getElementById('resultTable');
+
+        // 1. Thu thập dữ liệu từ các input
+        let queryParams = new URLSearchParams();
+        const name = document.getElementById('name').value;
+        const address = document.getElementById('address').value;
+        const rentArea = document.getElementById('rentArea').value;
+        const from = document.getElementById('rentPriceFrom').value;
+        const to = document.getElementById('rentPriceTo').value;
+        const staff = document.getElementById('staffName').value;
+
+        // 2. Chỉ append các tham số có dữ liệu
+        if (name) queryParams.append('name', name);
+        if (address) queryParams.append('address', address);
+        if (rentArea) queryParams.append('rentArea', rentArea);
+        if (from) queryParams.append('rentPriceFrom', from);
+        if (to) queryParams.append('rentPriceTo', to);
+        if (staff) queryParams.append('staffName', staff);
+
+        // 3. Gọi API
+        fetch(`http://localhost:8081/api/building?${queryParams.toString()}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Lỗi Server mã: " + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                tableBody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="no-data">Không tìm thấy kết quả phù hợp</td></tr>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    // Lưu ý: Dùng item.address và item.rentAreas vì Backend trả về DTO
+                    const row = `<tr>
+                                <td><strong>${item.name || ''}</strong></td>
+                                <td>${item.address || 'Đang cập nhật'}</td>
+                                <td>${item.rentAreas || '---'}</td>
+                                <td>${item.rentPrice || 0} triệu</td>
+                                <td>${item.managerName || 'Chưa có'}</td>
+                                <td>
+                                    <button class="btn-detail" onclick="viewDetail(${item.id})">
+                                        Xem
+                                    </button>
+                                </td>
+                            </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            })
+            .catch(error => {
+                console.error('Lỗi kết nối API:', error);
+                alert('Không thể tải dữ liệu: ' + error.message);
+            });
+    }
+    document.getElementById('btnSearch').addEventListener('click', searchBuildings);
+    function viewDetail(id) {
+        // Chuyển hướng sang trang chi tiết kèm theo ID của tòa nhà
+        // Ví dụ: /building-detail.html?id=1
+        window.location.href = `/building-detail.html?id=${id}`;
+    }
+
+    window.onload = searchBuildings;
+</script>
+</body>
+</html>

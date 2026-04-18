@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thông tin cá nhân staff</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f8fafc;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        }
+
+        .row {
+            margin-bottom: 14px;
+        }
+
+        .label {
+            font-weight: bold;
+            display: inline-block;
+            width: 140px;
+        }
+
+        .top-bar {
+            margin-bottom: 20px;
+        }
+
+        a.btn {
+            display: inline-block;
+            padding: 10px 14px;
+            text-decoration: none;
+            background: #2563eb;
+            color: white;
+            border-radius: 6px;
+            margin-right: 10px;
+        }
+
+        a.logout {
+            background: #dc2626;
+        }
+    </style>
+</head>
+<body>
+<div class="top-bar">
+    <a class="btn" href="/staff/building-list.html">Danh sách tòa nhà</a>
+    <a class="btn logout" href="/logout">Đăng xuất</a>
+</div>
+
+<div class="card">
+    <h2>Thông tin cá nhân</h2>
+    <div class="row"><span class="label">ID:</span><span id="id"></span></div>
+    <div class="row"><span class="label">Username:</span><span id="username"></span></div>
+    <div class="row"><span class="label">Họ tên:</span><span id="fullName"></span></div>
+    <div class="row"><span class="label">Role:</span><span id="roles"></span></div>
+</div>
+
+<script>
+    fetch("/api/auth/me")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Khong tai duoc thong tin nguoi dung");
+            }
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById("id").innerText = data.id ?? "";
+            document.getElementById("username").innerText = data.username ?? "";
+            document.getElementById("fullName").innerText = data.fullName ?? "";
+            document.getElementById("roles").innerText = (data.roles || []).join(", ");
+        })
+        .catch(error => {
+            alert(error.message);
+        });
+</script>
+</body>
+</html>

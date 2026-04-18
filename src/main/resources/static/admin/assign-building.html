@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Phân công nhân viên</title>
+</head>
+<body>
+<h2>Phân công nhân viên cho tòa nhà</h2>
+
+<div>
+    <a href="/admin/building-list.html">
+        <button type="button">Quay lại</button>
+    </a>
+</div>
+
+<br>
+<div id="staff-list">
+    Đang tải danh sách nhân viên...
+</div>
+
+<br>
+
+<button type="button" onclick="saveAssignment()">Lưu phân công</button>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const buildingId = urlParams.get('id');
+    let assignedStaffIds = [];
+
+    function loadStaff() {
+        fetch("http://localhost:8081/api/users/staff")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Không tải được danh sách staff");
+                }
+                return response.json();
+            })
+            .then(data => {
+                const container = document.getElementById("staff-list");
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = "Không có nhân viên nào.";
+                    return;
+                }
+                let html = "";
+                data.forEach(item => {
+                    const checked = assignedStaffIds.includes(item.id) ? "checked" : "";
+
+                    html += `
+                        <div>
+                            <label>
+                                <input type="checkbox" name="staffIds" value="${item.id}" ${checked}>
+                                ${item.fullName}
+                            </label>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+            })
+            .catch(error => {
+                document.getElementById("staff-list").innerHTML = "Lỗi: " + error.message;
+            });
+    }
+    function saveAssignment() {
+        if (!buildingId) {
+            alert("Không tìm thấy ID tòa nhà.");
+            return;
+        }
+
+        const checkedStaff = document.querySelectorAll('input[name="staffIds"]:checked');
+        const staffIds = Array.from(checkedStaff).map(item => parseInt(item.value));
+
+        const data = {
+            buildingId: parseInt(buildingId),
+            staffIds: staffIds
+        };
+
+        fetch("http://localhost:8081/api/users/assign-building", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.text())
+            .then(message => {
+                alert(message);
+                window.location.href = "/admin/building-list.html";
+            })
+            .catch(error => {
+                alert("Có lỗi xảy ra: " + error.message);
+            });
+    }
+
+    function loadAssignedStaff() {
+        if (!buildingId) return Promise.resolve();
+
+        return fetch(`http://localhost:8081/api/users/assigned-staff/${buildingId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Không tải được danh sách staff đã phân công");
+                }
+                return response.json();
+            })
+            .then(data => {
+                assignedStaffIds = data || [];
+            })
+            .catch(error => {
+                alert("Lỗi tải phân công cũ: " + error.message);
+            });
+    }
+
+    loadAssignedStaff().then(() => loadStaff());
+</script>
+</body>
+</html>
