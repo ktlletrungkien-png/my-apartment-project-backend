@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rent type </title>
+</head>
+<body>
+<button onclick="addRentType()">
+    Thêm loại hình thuê
+</button>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Mã loại hình thuê</th>
+        <th>Tên loại hình thuê</th>
+        <th>Thao tác</th>
+    </tr>
+    </thead>
+    <tbody id="result-table">
+    </tbody>
+</table>
+<script>
+    function displayRentType() {
+        fetch("http://localhost:8081/api/renttype")
+            .then(response => {
+                if (!response.ok) throw new Error("Loi" + response.status);
+                return response.json();
+            })
+            .then(data => {
+                const tbody = document.getElementById("result-table");
+                tbody.innerHTML = '';
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = `
+                  <tr>
+                    <td colspan="4">
+                      Khong co du lieu
+                    </td>
+                  </tr>
+                `;
+                    return;
+                }
+                data.forEach(item => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                  <td>${item.id}</td>
+                  <td>${item.code}</td>
+                  <td>${item.name}</td>
+                  <td>
+                       <button onclick="editRentType(${item.id})">Sửa</button>
+                       <button onclick="deleteRentType(${item.id})">Xóa</button>
+                  </td>
+                `;
+                    tbody.appendChild(row);
+                });
+
+            })
+            .catch(error => {
+                console.error("Lỗi: " + error);
+                const tbody = document.getElementById('result-table');
+                tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4">Không tải được dữ liệu </td>
+                        </tr>
+                    `;
+            });
+    }
+    function editRentType(id){
+        alert("Sửa loại hình thuê có ID = " + id);
+        window.location.href = `/admin/renttype-adding.html?id=${id}`;
+    }
+    function deleteRentType(id){
+        const confirmed = confirm("Bạn có chắc muốn xoá không?");
+        if (!confirmed) return;
+
+        fetch(`http://localhost:8081/api/renttype/${id}`, {
+            method: "DELETE"
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("Xoá thất bại");
+                return response.text();
+            })
+            .then(data => {
+                alert("Xoá thành công");
+                displayRentType(); // reload lại bảng
+            })
+            .catch(error => {
+                alert("Lỗi: " + error.message);
+            });
+    }
+    function addRentType(){
+        window.location.href = ``
+    }
+    window.onload = displayRentType;
+</script>
+</body>
+</html>

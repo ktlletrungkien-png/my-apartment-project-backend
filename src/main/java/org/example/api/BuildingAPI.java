@@ -21,7 +21,7 @@ public class BuildingAPI {
     private BuildingRepository buildingRepository;
 
     @GetMapping
-    // hàm này khi js gọi ....name=Nam?id=1 thì nó sẽ nấy param ra đi tìm
+    // hàm này khi js gọi ....name=Nam?id=1 thì nó sẽ mấy param ra đi tìm
     public List<BuildingDTO> findBuilding(@RequestParam Map<String, String> params) {
 
         return buildingService.findAll(params);
