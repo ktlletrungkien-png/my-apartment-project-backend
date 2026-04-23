@@ -25,4 +25,12 @@ public class RentTypeService {
         }
         return listRentType;
     }
+    public RentTypeDTO findById(Long id){
+        RentTypeDTO dto = new RentTypeDTO();
+        RentTypeEntity entity = rentTypeRepository.findById(id).orElseThrow(()->new RuntimeException("Khong tim thay"));
+        dto.setCode(entity.getCode());
+        dto.setName(entity.getName());
+        dto.setId(entity.getId());
+        return dto;
+    }
 }

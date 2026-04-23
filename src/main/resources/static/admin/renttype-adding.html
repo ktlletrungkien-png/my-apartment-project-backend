@@ -2,9 +2,79 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Rent type adding/editing</title>
 </head>
 <body>
+    <h2 id="form-title">Them loai hinh thue</h2>
+    <form>
+        <label>Mã loại</label>
+        <input id="code">
+        <label>Tên loại hình thuê</label>
+        <input id="name">
+        <button type="button" id="add-rent-type">Thêm</button>
+    </form>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const renttypeid = urlParams.get('id');
+        if (renttypeid){
+            document.getElementById('form-title').innerHTML='Sua loai hinh thue';
+            document.getElementById('add-rent-type').innerHTML='Sua';
+        }
+        document.getElementById('add-rent-type').addEventListener('click', addRentType);
+        loadRentTypeDetail();
+        function loadRentTypeDetail(){
+            if (!renttypeid) return;
+            fetch(`http://localhost:8081/api/renttype/${renttypeid}`)
+                .then(response =>{
+                    if (!response.ok) throw new Error("ERROR "+ response.status);
+                    return response.json();
+                })
+                .then(data =>{
+                    document.getElementById('code').value = data.code ?? '';
+                    document.getElementById('name').value = data.name ?? '';
+                })
+                .catch(error =>{
+                    alert("Loi tai du lieu" + error.message);
+                });
+        }
+        function addRentType(){
+            const code = document.getElementById('code').value.trim();
+            const name = document.getElementById('name').value.trim();
 
+            if (code === ''){
+                alert('Ma la truong bat buoc');
+                return;
+            }
+            if (name === ''){
+                alert('Ten la truong bat buoc');
+                return;
+            }
+
+            const renttype = {
+                code: code,
+                name: name
+            };
+            const url = renttypeid
+            ? `http://localhost:8081/api/renttype/${renttypeid}`
+            : `http://localhost:8081/api/renttype`;
+            const method = renttypeid ? "PUT" : "POST";
+            fetch(url, {
+                method: method,
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(renttype)
+            })
+                .then(response => response.text())
+                .then(data => {
+                    alert(data);
+                    window.location.href = "/admin/renttype-list.html";
+
+                })
+                .catch(error => {
+                    alert("Có lỗi xảy ra: " + error.message);
+                });
+        }
+    </script>
 </body>
 </html>
