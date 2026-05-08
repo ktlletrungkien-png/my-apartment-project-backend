@@ -29,12 +29,13 @@ public class SecurityConfig {
                                 "/login",
                                 "/logout",
                                 "/error",
+                                "/css/**",
                                 "/images/**",
                                 "/favicon.icon",
-                                "building-search.html",
+                                "/building-search.html",
                                 "/api/building",
                                 "/api/building/*",
-                                "building-detail.html"
+                                "/building-detail.html"
                         ).permitAll()
 
 

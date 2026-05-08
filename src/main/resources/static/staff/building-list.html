@@ -2,127 +2,110 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Danh sách tòa nhà được phân công</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 30px;
-            background: #f8fafc;
-        }
-
-        h2 {
-            margin-bottom: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-
-        th {
-            background: #2563eb;
-            color: white;
-        }
-
-        .top-bar {
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            padding: 10px 16px;
-            border: none;
-            background: #dc2626;
-            color: white;
-            cursor: pointer;
-            border-radius: 6px;
-            text-decoration: none;
-        }
-
-        .empty {
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tòa nhà được phân công</title>
+    <link rel="stylesheet" href="/css/staff.css">
 </head>
 <body>
-<div class="top-bar">
-    <a class="btn" href="/staff/dashboard.html">Dashboard</a>
-    <a class="btn" href="/staff/building-list.html">Tòa nhà của tôi</a>
-    <a class="btn" href="/staff/customer-list.html">Khách hàng</a>
-    <a class="btn" href="/staff/profile.html">Thông tin cá nhân</a>
-    <a class="btn" href="/logout">Đăng xuất</a>
-</div>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/staff/dashboard.html" aria-label="Staff dashboard">
+            <span class="brand-mark">A</span>
+            <span>Staff Workspace</span>
+        </a>
+        <nav class="staff-nav" aria-label="Điều hướng staff">
+            <a class="btn btn-secondary" href="/staff/dashboard.html">Dashboard</a>
+            <a class="btn" href="/staff/building-list.html">Tòa nhà</a>
+            <a class="btn btn-secondary" href="/staff/customer-list.html">Khách hàng</a>
+            <a class="btn btn-secondary" href="/staff/profile.html">Hồ sơ</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
 
-<h2>Tòa nhà được phân công cho tôi</h2>
+    <main class="staff-page">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Danh sách phân công</span>
+                <h1 class="page-title">Tòa nhà của tôi</h1>
+                <p class="subtitle">Theo dõi các tòa nhà bạn đang phụ trách, kèm thông tin quản lý và giá thuê.</p>
+            </div>
+            <span class="badge" id="buildingCount">Đang tải</span>
+        </section>
 
-<table>
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Tên tòa nhà</th>
-        <th>Địa chỉ</th>
-        <th>Diện tích thuê</th>
-        <th>Giá thuê</th>
-        <th>Quản lý</th>
-        <th>SĐT quản lý</th>
-    </tr>
-    </thead>
-    <tbody id="buildingTable"></tbody>
-</table>
+        <section class="data-card" aria-labelledby="buildingTitle">
+            <div class="data-header">
+                <div>
+                    <h2 class="section-title" id="buildingTitle">Tòa nhà được phân công</h2>
+                    <p class="section-text">Dữ liệu được lấy từ phân công hiện tại của manager.</p>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên tòa nhà</th>
+                        <th>Địa chỉ</th>
+                        <th>Diện tích thuê</th>
+                        <th>Giá thuê</th>
+                        <th>Quản lý</th>
+                        <th>SĐT quản lý</th>
+                    </tr>
+                    </thead>
+                    <tbody id="buildingTable"></tbody>
+                </table>
+            </div>
+        </section>
 
-<div id="emptyBox" class="empty" style="display:none;">
-    Bạn chưa được phân công tòa nhà nào.
+        <div id="emptyBox" class="empty">Bạn chưa được phân công tòa nhà nào.</div>
+    </main>
 </div>
 
 <script>
     function loadMyBuildings() {
-        fetch("/api/staff/buildings")
+        fetch('/api/staff/buildings')
             .then(response => {
                 if (!response.ok) {
-                    throw new Error("Khong tai duoc danh sach toa nha");
+                    throw new Error('Không tải được danh sách tòa nhà');
                 }
                 return response.json();
             })
             .then(data => {
-                const tbody = document.getElementById("buildingTable");
-                const emptyBox = document.getElementById("emptyBox");
-                tbody.innerHTML = "";
+                const tbody = document.getElementById('buildingTable');
+                const emptyBox = document.getElementById('emptyBox');
+                const count = document.getElementById('buildingCount');
+                tbody.innerHTML = '';
 
                 if (!data || data.length === 0) {
-                    emptyBox.style.display = "block";
+                    emptyBox.style.display = 'block';
+                    count.textContent = '0 tòa nhà';
                     return;
                 }
 
-                emptyBox.style.display = "none";
+                emptyBox.style.display = 'none';
+                count.textContent = `${data.length} tòa nhà`;
 
                 data.forEach(item => {
-                    const row = document.createElement("tr");
+                    const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${item.id ?? ""}</td>
-                        <td>${item.name ?? ""}</td>
-                        <td>${item.address ?? ""}</td>
-                        <td>${item.rentAreas ?? ""}</td>
-                        <td>${item.rentPrice ?? ""}</td>
-                        <td>${item.managerName ?? ""}</td>
-                        <td>${item.managerPhoneNumber ?? ""}</td>
+                        <td>${item.id ?? ''}</td>
+                        <td>${item.name ?? ''}</td>
+                        <td>${item.address ?? ''}</td>
+                        <td>${item.rentAreas ?? ''}</td>
+                        <td>${item.rentPrice ?? ''}</td>
+                        <td>${item.managerName ?? ''}</td>
+                        <td>${item.managerPhoneNumber ?? ''}</td>
                     `;
                     tbody.appendChild(row);
                 });
             })
             .catch(error => {
+                document.getElementById('buildingCount').textContent = 'Lỗi tải';
                 alert(error.message);
             });
     }
 
-    window.onload = loadMyBuildings;
+    window.addEventListener('load', loadMyBuildings);
 </script>
 </body>
 </html>

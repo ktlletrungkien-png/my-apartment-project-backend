@@ -2,142 +2,128 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi tiết khách hàng</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 30px;
-            background: #f8fafc;
-        }
-
-        .top-bar {
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 10px 16px;
-            background: #2563eb;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            margin-right: 10px;
-            border: none;
-            cursor: pointer;
-        }
-
-        .logout {
-            background: #dc2626;
-        }
-
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        textarea, select {
-            width: 100%;
-            margin-top: 8px;
-            margin-bottom: 16px;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-
-        th {
-            background: #2563eb;
-            color: white;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/staff.css">
 </head>
 <body>
-<div class="top-bar">
-    <a class="btn" href="/staff/customer-list.html">Quay lại danh sách khách hàng</a>
-    <a class="btn logout" href="/logout">Đăng xuất</a>
-</div>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/staff/dashboard.html" aria-label="Staff dashboard">
+            <span class="brand-mark">A</span>
+            <span>Staff Workspace</span>
+        </a>
+        <nav class="staff-nav" aria-label="Điều hướng staff">
+            <a class="btn btn-secondary" href="/staff/customer-list.html">Quay lại khách hàng</a>
+            <a class="btn btn-secondary" href="/staff/dashboard.html">Dashboard</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
 
-<div class="card">
-    <h2>Thêm giao dịch / chăm sóc</h2>
+    <main class="staff-page staff-page-narrow">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Chăm sóc khách hàng</span>
+                <h1 class="page-title">Cập nhật giao dịch</h1>
+                <p class="subtitle">Ghi nhận nội dung chăm sóc, tư vấn hoặc lịch dẫn đi xem cho khách hàng được phân công.</p>
+            </div>
+        </section>
 
-    <label for="transactionTypeId">Loại giao dịch</label>
-    <select id="transactionTypeId">
-        <option value="1">Chăm sóc</option>
-        <option value="2">Dẫn đi xem</option>
-        <option value="3">Tư vấn</option>
-    </select>
+        <section class="panel-card" aria-labelledby="transactionFormTitle">
+            <div class="panel-header">
+                <div>
+                    <h2 class="section-title" id="transactionFormTitle">Thêm giao dịch / chăm sóc</h2>
+                    <p class="section-text">Nội dung mới sẽ được thêm vào lịch sử giao dịch của khách hàng.</p>
+                </div>
+            </div>
 
-    <label for="note">Nội dung</label>
-    <textarea id="note" rows="4"></textarea>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="transactionTypeId">Loại giao dịch</label>
+                    <select id="transactionTypeId">
+                        <option value="1">Chăm sóc</option>
+                        <option value="2">Dẫn đi xem</option>
+                        <option value="3">Tư vấn</option>
+                    </select>
+                </div>
 
-    <button class="btn" onclick="saveTransaction()">Lưu giao dịch</button>
-</div>
+                <div class="field">
+                    <label for="note">Nội dung</label>
+                    <textarea id="note" rows="4" placeholder="Nhập nội dung trao đổi với khách hàng"></textarea>
+                </div>
 
-<div class="card">
-    <h2>Lịch sử giao dịch</h2>
-    <table>
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Loại</th>
-            <th>Nội dung</th>
-        </tr>
-        </thead>
-        <tbody id="transactionTable"></tbody>
-    </table>
+                <div>
+                    <button class="btn" type="button" onclick="saveTransaction()">Lưu giao dịch</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="data-card" aria-labelledby="historyTitle">
+            <div class="data-header">
+                <div>
+                    <h2 class="section-title" id="historyTitle">Lịch sử giao dịch</h2>
+                    <p class="section-text">Theo dõi các lần chăm sóc đã được ghi nhận.</p>
+                </div>
+                <span class="badge" id="transactionCount">Đang tải</span>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Loại</th>
+                        <th>Nội dung</th>
+                    </tr>
+                    </thead>
+                    <tbody id="transactionTable"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
 </div>
 
 <script>
     const params = new URLSearchParams(window.location.search);
-    const customerId = params.get("id");
+    const customerId = params.get('id');
 
     function loadTransactions() {
         fetch(`/api/staff/customers/${customerId}/transactions`)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error("Khong tai duoc lich su giao dich");
+                    throw new Error('Không tải được lịch sử giao dịch');
                 }
                 return response.json();
             })
             .then(data => {
-                const tbody = document.getElementById("transactionTable");
-                tbody.innerHTML = "";
+                const tbody = document.getElementById('transactionTable');
+                const count = document.getElementById('transactionCount');
+                tbody.innerHTML = '';
+                count.textContent = `${data.length || 0} giao dịch`;
 
                 data.forEach(item => {
-                    const row = document.createElement("tr");
+                    const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${item.id ?? ""}</td>
-                        <td>${item.transactionTypeName ?? ""}</td>
-                        <td>${item.note ?? ""}</td>
+                        <td>${item.id ?? ''}</td>
+                        <td>${item.transactionTypeName ?? ''}</td>
+                        <td>${item.note ?? ''}</td>
                     `;
                     tbody.appendChild(row);
                 });
             })
             .catch(error => {
+                document.getElementById('transactionCount').textContent = 'Lỗi tải';
                 alert(error.message);
             });
     }
 
     function saveTransaction() {
-        const transactionTypeId = document.getElementById("transactionTypeId").value;
-        const note = document.getElementById("note").value.trim();
+        const transactionTypeId = document.getElementById('transactionTypeId').value;
+        const note = document.getElementById('note').value.trim();
 
-        fetch("/api/staff/transactions", {
-            method: "POST",
+        fetch('/api/staff/transactions', {
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json"
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 customerId: Number(customerId),
@@ -148,7 +134,7 @@
             .then(response => response.text())
             .then(message => {
                 alert(message);
-                document.getElementById("note").value = "";
+                document.getElementById('note').value = '';
                 loadTransactions();
             })
             .catch(error => {

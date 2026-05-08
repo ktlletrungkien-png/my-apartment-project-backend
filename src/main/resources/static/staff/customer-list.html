@@ -2,131 +2,108 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Khách hàng được phân công</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 30px;
-            background: #f8fafc;
-        }
-
-        h2 {
-            margin-bottom: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-
-        th {
-            background: #2563eb;
-            color: white;
-        }
-
-        .top-bar {
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 10px 16px;
-            border: none;
-            background: #2563eb;
-            color: white;
-            cursor: pointer;
-            border-radius: 6px;
-            text-decoration: none;
-            margin-right: 10px;
-        }
-
-        .logout {
-            background: #dc2626;
-        }
-
-        .empty {
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/staff.css">
 </head>
 <body>
-<div class="top-bar">
-    <a class="btn" href="/staff/dashboard.html">Dashboard</a>
-    <a class="btn" href="/staff/building-list.html">Tòa nhà của tôi</a>
-    <a class="btn" href="/staff/profile.html">Thông tin cá nhân</a>
-    <a class="btn logout" href="/logout">Đăng xuất</a>
-</div>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/staff/dashboard.html" aria-label="Staff dashboard">
+            <span class="brand-mark">A</span>
+            <span>Staff Workspace</span>
+        </a>
+        <nav class="staff-nav" aria-label="Điều hướng staff">
+            <a class="btn btn-secondary" href="/staff/dashboard.html">Dashboard</a>
+            <a class="btn btn-secondary" href="/staff/building-list.html">Tòa nhà</a>
+            <a class="btn" href="/staff/customer-list.html">Khách hàng</a>
+            <a class="btn btn-secondary" href="/staff/profile.html">Hồ sơ</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
 
-<h2>Khách hàng được phân công</h2>
+    <main class="staff-page">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Khách hàng phụ trách</span>
+                <h1 class="page-title">Khách hàng của tôi</h1>
+                <p class="subtitle">Xem danh sách khách hàng được phân công và mở hồ sơ để cập nhật lịch sử chăm sóc.</p>
+            </div>
+            <span class="badge" id="customerCount">Đang tải</span>
+        </section>
 
-<table>
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Họ tên</th>
-        <th>Số điện thoại</th>
-        <th>Email</th>
-        <th>Thao tác</th>
-    </tr>
-    </thead>
-    <tbody id="customerTable"></tbody>
-</table>
+        <section class="data-card" aria-labelledby="customerTitle">
+            <div class="data-header">
+                <div>
+                    <h2 class="section-title" id="customerTitle">Danh sách khách hàng</h2>
+                    <p class="section-text">Mỗi hồ sơ có thể ghi nhận giao dịch hoặc nội dung chăm sóc.</p>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Họ tên</th>
+                        <th>Số điện thoại</th>
+                        <th>Email</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody id="customerTable"></tbody>
+                </table>
+            </div>
+        </section>
 
-<div id="emptyBox" class="empty">
-    Bạn chưa được phân công khách hàng nào.
+        <div id="emptyBox" class="empty">Bạn chưa được phân công khách hàng nào.</div>
+    </main>
 </div>
 
 <script>
     function loadMyCustomers() {
-        fetch("/api/staff/customers")
+        fetch('/api/staff/customers')
             .then(response => {
                 if (!response.ok) {
-                    throw new Error("Khong tai duoc danh sach khach hang");
+                    throw new Error('Không tải được danh sách khách hàng');
                 }
                 return response.json();
             })
             .then(data => {
-                const tbody = document.getElementById("customerTable");
-                const emptyBox = document.getElementById("emptyBox");
-                tbody.innerHTML = "";
+                const tbody = document.getElementById('customerTable');
+                const emptyBox = document.getElementById('emptyBox');
+                const count = document.getElementById('customerCount');
+                tbody.innerHTML = '';
 
                 if (!data || data.length === 0) {
-                    emptyBox.style.display = "block";
+                    emptyBox.style.display = 'block';
+                    count.textContent = '0 khách hàng';
                     return;
                 }
 
-                emptyBox.style.display = "none";
+                emptyBox.style.display = 'none';
+                count.textContent = `${data.length} khách hàng`;
 
                 data.forEach(item => {
-                    const row = document.createElement("tr");
+                    const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${item.id ?? ""}</td>
-                        <td>${item.fullName ?? ""}</td>
-                        <td>${item.phone ?? ""}</td>
-                        <td>${item.email ?? ""}</td>
+                        <td>${item.id ?? ''}</td>
+                        <td>${item.fullName ?? ''}</td>
+                        <td>${item.phone ?? ''}</td>
+                        <td>${item.email ?? ''}</td>
                         <td>
-                            <a class="btn" href="/staff/customer-detail.html?id=${item.id}">Xem</a>
+                            <a class="btn" href="/staff/customer-detail.html?id=${item.id}">Xem chi tiết</a>
                         </td>
                     `;
                     tbody.appendChild(row);
                 });
             })
             .catch(error => {
+                document.getElementById('customerCount').textContent = 'Lỗi tải';
                 alert(error.message);
             });
     }
 
-    window.onload = loadMyCustomers;
+    window.addEventListener('load', loadMyCustomers);
 </script>
 </body>
 </html>

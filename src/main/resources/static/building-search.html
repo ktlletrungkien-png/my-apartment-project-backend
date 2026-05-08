@@ -2,149 +2,221 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quản lý Bất động sản - Tìm kiếm</title>
-    <style>
-        /* CSS: Thêm một chút padding và kiểu dáng cho các ô input để đẹp hơn */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 30px; background-color: #f9f9f9; }
-        h2 { color: #333; }
-        .search-box {
-            background: white;
-            margin-bottom: 25px;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .search-box input {
-            padding: 10px;
-            margin-right: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 180px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button:hover { background-color: #45a049; }
-
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
-        th, td { border: 1px solid #eee; padding: 12px; text-align: left; }
-        th { background-color: #4CAF50; color: white; text-transform: uppercase; font-size: 14px; }
-        tr:nth-child(even) { background-color: #f2f2f2; }
-        tr:hover { background-color: #e9f5e9; }
-        .no-data { text-align: center; padding: 20px; color: #888; }
-        .btn-detail {
-            padding: 5px 12px;
-            background-color: #2196F3; /* Màu xanh dương khác với nút Tìm kiếm */
-            font-size: 12px;
-        }
-        .btn-detail:hover {
-            background-color: #1976D2;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tìm kiếm tòa nhà</title>
+    <link rel="stylesheet" href="/css/public.css">
 </head>
 <body>
+<header class="topbar">
+    <a class="brand" href="building-search.html" aria-label="Trang tìm kiếm tòa nhà">
+        <span class="brand-mark">A</span>
+        <span>Apartment</span>
+    </a>
+    <div class="nav-actions">
+        <a class="btn btn-secondary" href="login.html">Đăng nhập</a>
+        <button class="btn btn-primary" type="button" onclick="document.getElementById('name').focus()">Tìm tòa nhà</button>
+    </div>
+</header>
 
-<h2>🏢 Hệ thống tìm kiếm tòa nhà</h2>
+<main class="page">
+    <section class="hero" aria-labelledby="pageTitle">
+        <div class="hero-copy">
+            <span class="eyebrow">Không gian văn phòng phù hợp</span>
+            <h1 class="hero-title" id="pageTitle">Tìm tòa nhà cho nhu cầu thuê của bạn</h1>
+            <p class="subtitle">
+                Lọc nhanh theo tên, địa chỉ, diện tích, khoảng giá và nhân viên phụ trách để xem danh sách tòa nhà đang có trong hệ thống.
+            </p>
+        </div>
 
-<div class="search-box">
-    <input type="text" id="name" placeholder="Tên tòa nhà">
-    <input type="text" id="address" placeholder="Đường hoặc Phường">
-    <input type="number" id="rentArea" placeholder="Diện tích (m2)">
-    <input type="number" id="rentPriceFrom" placeholder="Giá thuê từ">
-    <input type="number" id="rentPriceTo" placeholder="Giá thuê đến">
-    <input type="text" id="staffName" placeholder="Tên nhân viên">
-    <button id="btnSearch">🔍 Tìm kiếm</button>
-</div>
+        <div class="board-preview" aria-hidden="true">
+            <div class="board-window">
+                <div class="board-header">
+                    <span>Bảng tìm kiếm tòa nhà</span>
+                    <div class="window-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="sticky-grid">
+                    <div class="sticky-note yellow">
+                        <strong>Vị trí</strong>
+                        <span>Tìm theo đường, phường hoặc khu vực.</span>
+                    </div>
+                    <div class="sticky-note teal">
+                        <strong>Diện tích</strong>
+                        <span>So khớp diện tích thuê đang cần.</span>
+                    </div>
+                    <div class="sticky-note rose">
+                        <strong>Ngân sách</strong>
+                        <span>Lọc theo khoảng giá thuê mong muốn.</span>
+                    </div>
+                    <div class="sticky-note coral">
+                        <strong>Quản lý</strong>
+                        <span>Xem nhân viên đang phụ trách tòa nhà.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<table>
-    <thead>
-    <tr>
-        <th>Tên tòa nhà</th>
-        <th>Địa chỉ</th>
-        <th>Diện tích (m2)</th>
-        <th>Giá thuê</th>
-        <th>Người quản lý</th>
-        <th>Thao tác</th> </tr>
-    </tr>
-    </thead>
-    <tbody id="resultTable">
-    </tbody>
-</table>
+    <section class="panel" aria-labelledby="searchTitle">
+        <div class="panel-heading">
+            <div>
+                <h2 class="section-title" id="searchTitle">Bộ lọc tìm kiếm</h2>
+                <p class="section-text">Để trống các trường không cần lọc.</p>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="field">
+                <label for="name">Tên tòa nhà</label>
+                <input type="text" id="name" placeholder="Ví dụ: Alpha Tower">
+            </div>
+            <div class="field">
+                <label for="address">Địa chỉ</label>
+                <input type="text" id="address" placeholder="Đường hoặc phường">
+            </div>
+            <div class="field">
+                <label for="rentArea">Diện tích thuê</label>
+                <input type="number" id="rentArea" placeholder="m2">
+            </div>
+            <div class="field">
+                <label for="rentPriceFrom">Giá thuê từ</label>
+                <input type="number" id="rentPriceFrom" placeholder="Triệu">
+            </div>
+            <div class="field">
+                <label for="rentPriceTo">Giá thuê đến</label>
+                <input type="number" id="rentPriceTo" placeholder="Triệu">
+            </div>
+            <div class="field">
+                <label for="staffName">Nhân viên phụ trách</label>
+                <input type="text" id="staffName" placeholder="Tên nhân viên">
+            </div>
+        </div>
+
+        <div class="button-row">
+            <button class="btn btn-secondary" type="button" id="btnClear">Xóa lọc</button>
+            <button class="btn btn-primary" type="button" id="btnSearch">Tìm kiếm</button>
+        </div>
+    </section>
+
+    <section class="results-card" aria-labelledby="resultsTitle">
+        <div class="results-header">
+            <h2 class="section-title" id="resultsTitle">Danh sách tòa nhà</h2>
+            <span class="badge" id="resultCount">Đang tải</span>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>Tên tòa nhà</th>
+                    <th>Địa chỉ</th>
+                    <th>Diện tích</th>
+                    <th>Giá thuê</th>
+                    <th>Người quản lý</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody id="resultTable"></tbody>
+            </table>
+        </div>
+    </section>
+</main>
 
 <script>
+    const filters = ['name', 'address', 'rentArea', 'rentPriceFrom', 'rentPriceTo', 'staffName'];
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    function setResultCount(text) {
+        document.getElementById('resultCount').textContent = text;
+    }
+
     function searchBuildings() {
         const tableBody = document.getElementById('resultTable');
+        const queryParams = new URLSearchParams();
 
-        // 1. Thu thập dữ liệu từ các input
-        let queryParams = new URLSearchParams();
-        const name = document.getElementById('name').value;
-        const address = document.getElementById('address').value;
-        const rentArea = document.getElementById('rentArea').value;
-        const from = document.getElementById('rentPriceFrom').value;
-        const to = document.getElementById('rentPriceTo').value;
-        const staff = document.getElementById('staffName').value;
+        filters.forEach((fieldId) => {
+            const value = document.getElementById(fieldId).value.trim();
+            if (value) {
+                queryParams.append(fieldId, value);
+            }
+        });
 
-        // 2. Chỉ append các tham số có dữ liệu
-        if (name) queryParams.append('name', name);
-        if (address) queryParams.append('address', address);
-        if (rentArea) queryParams.append('rentArea', rentArea);
-        if (from) queryParams.append('rentPriceFrom', from);
-        if (to) queryParams.append('rentPriceTo', to);
-        if (staff) queryParams.append('staffName', staff);
+        tableBody.innerHTML = '<tr><td colspan="6" class="no-data">Đang tải dữ liệu...</td></tr>';
+        setResultCount('Đang tải');
 
-        // 3. Gọi API
-        fetch(`http://localhost:8081/api/building?${queryParams.toString()}`)
+        fetch(`/api/building?${queryParams.toString()}`)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error("Lỗi Server mã: " + response.status);
+                    throw new Error('Lỗi server mã: ' + response.status);
                 }
                 return response.json();
             })
             .then(data => {
                 tableBody.innerHTML = '';
 
-                if (data.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="5" class="no-data">Không tìm thấy kết quả phù hợp</td></tr>';
+                if (!Array.isArray(data) || data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="no-data">Không tìm thấy kết quả phù hợp</td></tr>';
+                    setResultCount('0 kết quả');
                     return;
                 }
 
-                data.forEach(item => {
-                    // Lưu ý: Dùng item.address và item.rentAreas vì Backend trả về DTO
-                    const row = `<tr>
-                                <td><strong>${item.name || ''}</strong></td>
-                                <td>${item.address || 'Đang cập nhật'}</td>
-                                <td>${item.rentAreas || '---'}</td>
-                                <td>${item.rentPrice || 0} triệu</td>
-                                <td>${item.managerName || 'Chưa có'}</td>
-                                <td>
-                                    <button class="btn-detail" onclick="viewDetail(${item.id})">
-                                        Xem
-                                    </button>
-                                </td>
-                            </tr>`;
-                    tableBody.innerHTML += row;
-                });
+                setResultCount(`${data.length} kết quả`);
+
+                tableBody.innerHTML = data.map(item => `
+                    <tr>
+                        <td><span class="building-name">${escapeHtml(item.name || 'Chưa có tên')}</span></td>
+                        <td>${escapeHtml(item.address || 'Đang cập nhật')}</td>
+                        <td>${escapeHtml(item.rentAreas || '---')} m2</td>
+                        <td><span class="price-pill">${escapeHtml(item.rentPrice || 0)} triệu</span></td>
+                        <td><span class="manager-pill">${escapeHtml(item.managerName || 'Chưa có')}</span></td>
+                        <td>
+                            <button class="btn btn-blue btn-small" type="button" onclick="viewDetail(${Number(item.id) || 0})">
+                                Xem chi tiết
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
             })
             .catch(error => {
                 console.error('Lỗi kết nối API:', error);
-                alert('Không thể tải dữ liệu: ' + error.message);
+                tableBody.innerHTML = `<tr><td colspan="6" class="no-data">Không thể tải dữ liệu: ${escapeHtml(error.message)}</td></tr>`;
+                setResultCount('Lỗi tải');
             });
     }
-    document.getElementById('btnSearch').addEventListener('click', searchBuildings);
+
+    function clearFilters() {
+        filters.forEach((fieldId) => {
+            document.getElementById(fieldId).value = '';
+        });
+        searchBuildings();
+    }
+
     function viewDetail(id) {
-        // Chuyển hướng sang trang chi tiết kèm theo ID của tòa nhà
-        // Ví dụ: /building-detail.html?id=1
         window.location.href = `/building-detail.html?id=${id}`;
     }
 
-    window.onload = searchBuildings;
+    document.getElementById('btnSearch').addEventListener('click', searchBuildings);
+    document.getElementById('btnClear').addEventListener('click', clearFilters);
+
+    filters.forEach((fieldId) => {
+        document.getElementById(fieldId).addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                searchBuildings();
+            }
+        });
+    });
+
+    window.addEventListener('load', searchBuildings);
 </script>
 </body>
 </html>
