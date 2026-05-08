@@ -42,6 +42,41 @@ public class UserAPI {
         return userService.getAllCustomers();
     }
 
+    @GetMapping("/customers/{id}")
+    public CustomerDTO getCustomerById(@PathVariable Long id) {
+        return userService.getCustomerById(id);
+    }
+
+    @PostMapping("/customers")
+    public String saveCustomer(@RequestBody CustomerDTO customerDTO) {
+        try {
+            userService.saveCustomer(customerDTO);
+            return "Them khach hang thanh cong";
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
+    @PutMapping("/customers/{id}")
+    public String updateCustomer(@PathVariable Long id, @RequestBody CustomerDTO customerDTO) {
+        try {
+            userService.updateCustomer(id, customerDTO);
+            return "Cap nhat khach hang thanh cong";
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
+    @DeleteMapping("/customers/{id}")
+    public String deleteCustomer(@PathVariable Long id) {
+        try {
+            userService.deleteCustomer(id);
+            return "Xoa khach hang thanh cong";
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
     @PostMapping("/assign-customer")
     public String assignCustomer(@RequestBody CustomerAssignmentRequest request) {
         try {

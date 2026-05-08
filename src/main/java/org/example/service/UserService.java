@@ -16,6 +16,7 @@ import org.example.repository.AssignmentCustomerRepository;
 import org.example.repository.BuildingRepository;
 import org.example.repository.CustomerRepository;
 import org.example.repository.RoleRepository;
+import org.example.repository.TransactionRepository;
 import org.example.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,8 @@ public class UserService {
     private BuildingRepository buildingRepository;
     @Autowired
     private CustomerRepository customerRepository;
+    @Autowired
+    private TransactionRepository transactionRepository;
     public List<StaffDTO> getAllStaff(){
         return userRepository.findAllStaff().stream().map(item -> {
             StaffDTO dto = new StaffDTO();
@@ -83,6 +86,48 @@ public class UserService {
             dto.setEmail(item.getEmail());
             return dto;
         }).collect(Collectors.toList());
+    }
+
+    public CustomerDTO getCustomerById(Long id) {
+        CustomerEntity customer = customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Khong tim thay khach hang"));
+
+        CustomerDTO dto = new CustomerDTO();
+        dto.setId(customer.getId());
+        dto.setFullName(customer.getFullname());
+        dto.setPhone(customer.getPhone());
+        dto.setEmail(customer.getEmail());
+        return dto;
+    }
+
+    public void saveCustomer(CustomerDTO dto) {
+        CustomerEntity customer = new CustomerEntity();
+        customer.setFullname(dto.getFullName());
+        customer.setPhone(dto.getPhone());
+        customer.setEmail(dto.getEmail());
+
+        customerRepository.save(customer);
+    }
+
+    public void updateCustomer(Long id, CustomerDTO dto) {
+        CustomerEntity customer = customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Khong tim thay khach hang"));
+
+        customer.setFullname(dto.getFullName());
+        customer.setPhone(dto.getPhone());
+        customer.setEmail(dto.getEmail());
+
+        customerRepository.save(customer);
+    }
+
+    @Transactional
+    public void deleteCustomer(Long id) {
+        CustomerEntity customer = customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Khong tim thay khach hang"));
+
+        assignmentCustomerRepository.deleteAssignmentByCustomerId(customer.getId());
+        transactionRepository.deleteByCustomerId(customer.getId());
+        customerRepository.delete(customer);
     }
 
     @Transactional
