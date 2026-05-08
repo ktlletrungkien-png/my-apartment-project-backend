@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thong tin khach hang</title>
+</head>
+<body>
+<div style="margin-bottom: 20px;">
+    <a href="/admin/customer-list.html">
+        <button type="button">Quay lai</button>
+    </a>
+</div>
+
+<h1 id="page-title">Them khach hang</h1>
+
+<form id="customer-form">
+    <label>Ho ten</label>
+    <input type="text" id="fullName" required>
+    <br>
+
+    <label>So dien thoai</label>
+    <input type="text" id="phone">
+    <br>
+
+    <label>Email</label>
+    <input type="email" id="email">
+    <br>
+
+    <button type="button" onclick="saveCustomer()">Luu</button>
+</form>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const customerId = urlParams.get("id");
+
+    function loadCustomer() {
+        if (!customerId) {
+            return;
+        }
+
+        document.getElementById("page-title").innerText = "Sua khach hang";
+
+        fetch(`http://localhost:8081/api/users/customers/${customerId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Khong tai duoc thong tin khach hang");
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById("fullName").value = data.fullName ?? "";
+                document.getElementById("phone").value = data.phone ?? "";
+                document.getElementById("email").value = data.email ?? "";
+            })
+            .catch(error => {
+                alert(error.message);
+            });
+    }
+
+    function saveCustomer() {
+        const customerData = {
+            fullName: document.getElementById("fullName").value.trim(),
+            phone: document.getElementById("phone").value.trim(),
+            email: document.getElementById("email").value.trim()
+        };
+
+        if (!customerData.fullName) {
+            alert("Vui long nhap ho ten khach hang");
+            return;
+        }
+
+        const url = customerId
+            ? `http://localhost:8081/api/users/customers/${customerId}`
+            : "http://localhost:8081/api/users/customers";
+
+        const method = customerId ? "PUT" : "POST";
+
+        fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(customerData)
+        })
+            .then(response => response.text())
+            .then(message => {
+                alert(message);
+                window.location.href = "/admin/customer-list.html";
+            })
+            .catch(error => {
+                alert("Co loi xay ra: " + error.message);
+            });
+    }
+
+    window.onload = loadCustomer;
+</script>
+</body>
+</html>

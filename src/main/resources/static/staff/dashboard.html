@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard</title>
+    <link rel="stylesheet" href="/css/staff.css">
+</head>
+<body>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/staff/dashboard.html" aria-label="Staff dashboard">
+            <span class="brand-mark">A</span>
+            <span>Staff Workspace</span>
+        </a>
+        <nav class="staff-nav" aria-label="Điều hướng staff">
+            <a class="btn btn-secondary" href="/staff/building-list.html">Tòa nhà</a>
+            <a class="btn btn-secondary" href="/staff/customer-list.html">Khách hàng</a>
+            <a class="btn btn-secondary" href="/staff/profile.html">Hồ sơ</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Khu vực nhân viên</span>
+                <h1 class="page-title">Quản lý công việc được phân công</h1>
+                <p class="subtitle">Theo dõi tòa nhà, khách hàng và các giao dịch chăm sóc trong một giao diện thống nhất.</p>
+            </div>
+        </section>
+
+        <section class="dashboard-grid" aria-label="Chức năng staff">
+            <a class="dashboard-card" href="/staff/building-list.html">
+                <span class="card-icon">B</span>
+                <h2>Tòa nhà của tôi</h2>
+                <p>Xem danh sách tòa nhà manager đã phân công cho bạn.</p>
+            </a>
+
+            <a class="dashboard-card" href="/staff/customer-list.html">
+                <span class="card-icon">C</span>
+                <h2>Khách hàng của tôi</h2>
+                <p>Xem khách hàng được phân công và cập nhật lịch sử giao dịch.</p>
+            </a>
+
+            <a class="dashboard-card" href="/staff/profile.html">
+                <span class="card-icon">P</span>
+                <h2>Thông tin cá nhân</h2>
+                <p>Kiểm tra thông tin tài khoản staff đang đăng nhập.</p>
+            </a>
+        </section>
+    </main>
+</div>
+</body>
+</html>

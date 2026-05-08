@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quan ly khach hang</title>
+</head>
+<body>
+<div style="margin-bottom: 20px;">
+    <a href="/admin/dashboard.html">
+        <button type="button">Dashboard</button>
+    </a>
+    <a href="/admin/building-list.html">
+        <button type="button">Quay lai</button>
+    </a>
+    <a href="/admin/customer-form.html">
+        <button type="button">Them khach hang</button>
+    </a>
+</div>
+
+<h1>Danh sach khach hang</h1>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Ho ten</th>
+        <th>So dien thoai</th>
+        <th>Email</th>
+        <th>Thao tac</th>
+    </tr>
+    </thead>
+    <tbody id="customer-table"></tbody>
+</table>
+
+<script>
+    function loadCustomers() {
+        fetch("http://localhost:8081/api/users/customers")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Khong tai duoc danh sach khach hang");
+                }
+                return response.json();
+            })
+            .then(data => {
+                const tbody = document.getElementById("customer-table");
+                tbody.innerHTML = "";
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5">Khong co khach hang nao</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                data.forEach(item => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${item.id ?? ""}</td>
+                        <td>${item.fullName ?? ""}</td>
+                        <td>${item.phone ?? ""}</td>
+                        <td>${item.email ?? ""}</td>
+                        <td>
+                            <button type="button" onclick="editCustomer(${item.id})">Sua</button>
+                            <button type="button" onclick="assignCustomer(${item.id})">Phan cong</button>
+                            <button type="button" onclick="deleteCustomer(${item.id})">Xoa</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                document.getElementById("customer-table").innerHTML = `
+                    <tr>
+                        <td colspan="5">Loi: ${error.message}</td>
+                    </tr>
+                `;
+            });
+    }
+
+    function editCustomer(id) {
+        window.location.href = `/admin/customer-form.html?id=${id}`;
+    }
+
+    function assignCustomer(id) {
+        window.location.href = `/admin/assign-customer.html?id=${id}`;
+    }
+
+    function deleteCustomer(id) {
+        const confirmed = confirm("Ban co chac muon xoa khach hang nay khong?");
+        if (!confirmed) {
+            return;
+        }
+
+        fetch(`http://localhost:8081/api/users/customers/${id}`, {
+            method: "DELETE"
+        })
+            .then(response => response.text())
+            .then(message => {
+                alert(message);
+                loadCustomers();
+            })
+            .catch(error => {
+                alert("Co loi xay ra khi xoa: " + error.message);
+            });
+    }
+
+    window.onload = loadCustomers;
+</script>
+</body>
+</html>

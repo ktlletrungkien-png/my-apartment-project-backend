@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Manager Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 32px;
+            background: #1f2937;
+            color: white;
+        }
+
+        .top-bar h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .logout {
+            padding: 10px 14px;
+            background: #dc2626;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+
+        .container {
+            padding: 32px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+        }
+
+        .card {
+            display: block;
+            padding: 22px;
+            background: white;
+            color: #111827;
+            text-decoration: none;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+
+        .card:hover {
+            border-color: #2563eb;
+        }
+
+        .card h2 {
+            margin: 0 0 10px;
+            font-size: 20px;
+        }
+
+        .card p {
+            margin: 0;
+            color: #4b5563;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+<div class="top-bar">
+    <h1>Manager Dashboard</h1>
+    <a class="logout" href="/logout">Dang xuat</a>
+</div>
+
+<div class="container">
+    <div class="grid">
+        <a class="card" href="/admin/building-list.html">
+            <h2>Quan ly toa nha</h2>
+            <p>Xem, them, sua, xoa toa nha va phan cong nhan vien phu trach.</p>
+        </a>
+
+        <a class="card" href="/admin/customer-list.html">
+            <h2>Quan ly khach hang</h2>
+            <p>Them, sua, xoa khach hang va phan cong khach hang cho nhan vien.</p>
+        </a>
+
+        <a class="card" href="/admin/renttype-list.html">
+            <h2>Loai hinh thue</h2>
+            <p>Quan ly cac loai hinh thue cua toa nha.</p>
+        </a>
+
+        <a class="card" href="/admin/user-create.html">
+            <h2>Tao tai khoan</h2>
+            <p>Tao tai khoan moi cho manager, staff hoac customer.</p>
+        </a>
+
+        <a class="card" href="/admin/profile.html">
+            <h2>Thong tin ca nhan</h2>
+            <p>Xem thong tin tai khoan manager dang dang nhap.</p>
+        </a>
+    </div>
+</div>
+</body>
+</html>

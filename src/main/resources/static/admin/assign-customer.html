@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Phan cong khach hang</title>
+</head>
+<body>
+<h2>Phan cong nhan vien cho khach hang</h2>
+
+<div>
+    <a href="/admin/customer-list.html">
+        <button type="button">Quay lai</button>
+    </a>
+</div>
+
+<br>
+<div id="staff-list">
+    Dang tai danh sach nhan vien...
+</div>
+
+<br>
+
+<button type="button" onclick="saveAssignment()">Luu phan cong</button>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const customerId = urlParams.get("id");
+    let assignedStaffIds = [];
+
+    function loadStaff() {
+        fetch("http://localhost:8081/api/users/staff")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Khong tai duoc danh sach staff");
+                }
+                return response.json();
+            })
+            .then(data => {
+                const container = document.getElementById("staff-list");
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = "Khong co nhan vien nao.";
+                    return;
+                }
+
+                let html = "";
+                data.forEach(item => {
+                    const checked = assignedStaffIds.includes(item.id) ? "checked" : "";
+
+                    html += `
+                        <div>
+                            <label>
+                                <input type="checkbox" name="staffIds" value="${item.id}" ${checked}>
+                                ${item.fullName}
+                            </label>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+            })
+            .catch(error => {
+                document.getElementById("staff-list").innerHTML = "Loi: " + error.message;
+            });
+    }
+
+    function saveAssignment() {
+        if (!customerId) {
+            alert("Khong tim thay ID khach hang.");
+            return;
+        }
+
+        const checkedStaff = document.querySelectorAll('input[name="staffIds"]:checked');
+        const staffIds = Array.from(checkedStaff).map(item => parseInt(item.value));
+
+        const data = {
+            customerId: parseInt(customerId),
+            staffIds: staffIds
+        };
+
+        fetch("http://localhost:8081/api/users/assign-customer", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.text())
+            .then(message => {
+                alert(message);
+                window.location.href = "/admin/customer-list.html";
+            })
+            .catch(error => {
+                alert("Co loi xay ra: " + error.message);
+            });
+    }
+
+    function loadAssignedStaff() {
+        if (!customerId) return Promise.resolve();
+
+        return fetch(`http://localhost:8081/api/users/assigned-staff-by-customer/${customerId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Khong tai duoc danh sach staff da phan cong");
+                }
+                return response.json();
+            })
+            .then(data => {
+                assignedStaffIds = data || [];
+            })
+            .catch(error => {
+                alert("Loi tai phan cong cu: " + error.message);
+            });
+    }
+
+    loadAssignedStaff().then(() => loadStaff());
+</script>
+</body>
+</html>
