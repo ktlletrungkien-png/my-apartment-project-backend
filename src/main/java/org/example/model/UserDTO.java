@@ -11,5 +11,5 @@ public class UserDTO {
     private String username, password, fullname, phone, email;
     private Long id;
     private int status;
-    private Set<String> roles;
+    private String role;
 }

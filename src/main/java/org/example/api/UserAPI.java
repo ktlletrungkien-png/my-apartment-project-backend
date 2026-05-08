@@ -39,4 +39,14 @@ public class UserAPI {
     public List<UserDTO> getAllUser(){
         return userService.getAllUser();
     }
+    @PostMapping()
+    public String saveUser(@RequestBody UserDTO user){
+        try{
+            userService.saveUser(user);
+            return "Tao tai khoan moi thanh cong";
+        }
+        catch (Exception e){
+            return e.getMessage();
+        }
+    }
 }

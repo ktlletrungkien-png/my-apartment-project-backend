@@ -9,6 +9,7 @@ import org.example.model.StaffDTO;
 import org.example.model.UserDTO;
 import org.example.repository.AssignmentBuildingRepository;
 import org.example.repository.BuildingRepository;
+import org.example.repository.RoleRepository;
 import org.example.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class UserService {
             return dto;
         }).collect(Collectors.toList());
     }
+
     @Transactional
     public void assignStaffToBuilding(AssignmentRequest request) {
         buildingRepository.deleteAssignmentByBuildingId(request.getBuildingId());
@@ -70,11 +72,13 @@ public class UserService {
             userDTO.setId(user.getId());
             userDTO.setFullname(user.getFullname());
             Set<RoleEntity> roles = user.getRoles();
-            Set<String> userrole = new HashSet<>();
+
+            String userrole = "";
             for (RoleEntity x : roles){
-                userrole.add(x.getName());
+                userrole = x.getCode();
             }
-            userDTO.setRoles(userrole);
+
+            userDTO.setRole(userrole);
             userDTO.setPhone(user.getPhone());
             userDTO.setEmail(user.getEmail());
             userDTO.setPassword(user.getPassword());
@@ -83,5 +87,21 @@ public class UserService {
             dto.add(userDTO);
         }
         return dto;
+    }
+    @Autowired
+    private RoleRepository roleRepository;
+    public void saveUser(UserDTO dto){
+        UserEntity user = new UserEntity();
+        user.setPassword(dto.getPassword());
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setFullname(dto.getFullname());
+        user.setPhone(dto.getPhone());
+        user.setStatus(1);
+
+        RoleEntity roleEnt = roleRepository.findByCode(dto.getRole()).orElseThrow(()->new RuntimeException("Khong tim thay role"));
+        user.setRoles(Set.of(roleEnt));
+
+        userRepository.save(user);
     }
 }
