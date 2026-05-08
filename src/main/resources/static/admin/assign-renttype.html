@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Assign Rent Type</title>
+</head>
+<body>
+<h2>Gan loai hinh thue cho toa nha</h2>
+
+<div>
+  <a href="/admin/building-list.html">
+    <button type="button">Quay lai</button>
+  </a>
+</div>
+
+<div id="renttype-list"></div>
+
+<button type="button" onclick="saveRentTypes()">Luu</button>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const buildingId = urlParams.get("id");
+
+  async function loadRentTypes() {
+    if (!buildingId) {
+      alert("Khong tim thay buildingId");
+      return;
+    }
+
+    try {
+      const [allRentTypesResponse, assignedResponse] = await Promise.all([
+        fetch("http://localhost:8081/api/renttype"),
+        fetch(`http://localhost:8081/api/building/${buildingId}/renttypes`)
+      ]);
+
+      if (!allRentTypesResponse.ok) {
+        throw new Error("Khong tai duoc danh sach loai hinh thue");
+      }
+
+      if (!assignedResponse.ok) {
+        throw new Error("Khong tai duoc danh sach da gan");
+      }
+
+      const allRentTypes = await allRentTypesResponse.json();
+      const assignedIds = await assignedResponse.json();
+
+      const container = document.getElementById("renttype-list");
+      container.innerHTML = "";
+
+      allRentTypes.forEach(item => {
+        const checked = assignedIds.includes(item.id) ? "checked" : "";
+        const row = document.createElement("div");
+        row.innerHTML = `
+                    <label>
+                        <input type="checkbox" value="${item.id}" ${checked}>
+                        ${item.name}
+                    </label>
+                `;
+        container.appendChild(row);
+      });
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  function saveRentTypes() {
+    const checkedBoxes = document.querySelectorAll('#renttype-list input[type="checkbox"]:checked');
+    const rentTypeIds = Array.from(checkedBoxes).map(item => Number(item.value));
+
+    const payload = {
+      buildingId: Number(buildingId),
+      rentTypeIds: rentTypeIds
+    };
+
+    fetch("http://localhost:8081/api/building/renttypes", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    })
+            .then(response => response.text())
+            .then(data => {
+              alert(data);
+              window.location.href = "/admin/building-list.html";
+            })
+            .catch(error => {
+              alert("Co loi xay ra: " + error.message);
+            });
+  }
+
+  window.onload = loadRentTypes;
+</script>
+</body>
+</html>

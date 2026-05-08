@@ -30,15 +30,20 @@ public class SecurityConfig {
                                 "/logout",
                                 "/error",
                                 "/images/**",
-                                "/favicon.ico"
+                                "/favicon.icon",
+                                "building-search.html",
+                                "/api/building",
+                                "/api/building/*",
+                                "building-detail.html"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/building", "/api/building/*")
-                        .hasAnyRole("MANAGER", "STAFF", "CUSTOMER")
+
 
                         .requestMatchers(HttpMethod.POST, "/api/building").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.PUT, "/api/building/*").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/renttype").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/building/*").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/api/building/*/renttypes").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/api/building/renttypes").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/renttype/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.POST, "/api/renttype").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.PUT, "/api/renttype/**").hasRole("MANAGER")

@@ -1,21 +1,32 @@
 package org.example.service;
 
 import org.example.entity.BuildingEntity;
+import org.example.entity.BuildingRentTypeEntity;
+import org.example.entity.RentTypeEntity;
 import org.example.model.BuildingDTO;
+import org.example.model.BuildingRentTypeRequest;
+import org.example.repository.BuildingRentTypeRepository;
 import org.example.repository.BuildingRepository;
+import org.example.repository.RentTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class BuildingService {
-
     @Autowired
     private BuildingRepository buildingRepository;
+
+    @Autowired
+    private BuildingRentTypeRepository buildingRentTypeRepository;
+
+    @Autowired
+    private RentTypeRepository rentTypeRepository;
 
     @Transactional(readOnly = true)
     public List<BuildingDTO> findAll(Map<String, String> params) {
@@ -109,5 +120,33 @@ public class BuildingService {
         }
 
         return dto;
+    }
+    @Transactional(readOnly = true)
+    public List<Long> getAssigmentRentTypeIds(Long buildingId){
+        List<BuildingRentTypeEntity> assigments = buildingRentTypeRepository.findByBuildingId(buildingId);
+        List<Long> ids = new ArrayList<>();
+        for (BuildingRentTypeEntity bdrt : assigments){
+            ids.add(bdrt.getRentType().getId());
+        }
+        return ids;
+    }
+
+    @Transactional
+    public void assignRentTypes(BuildingRentTypeRequest request){
+        Long buildingId = request.getBuildingId();
+        List<Long> rentTypeIds = request.getRentTypeIds();
+        buildingRentTypeRepository.deleteByBuildingId(buildingId);
+        if (request.getRentTypeIds() == null || request.getRentTypeIds().isEmpty()) {
+            return;
+        }
+        for (Long rentTypeId : rentTypeIds){
+            BuildingEntity building = buildingRepository.findById(buildingId).orElseThrow(()->new RuntimeException("Khong tim thay toa nha"));
+            RentTypeEntity rentType = rentTypeRepository.findById(rentTypeId).orElseThrow(()->new RuntimeException("Khong tim thay loai hinh thue"));
+            BuildingRentTypeEntity result = new BuildingRentTypeEntity();
+            result.setBuilding(building);
+            result.setRentType(rentType);
+            buildingRentTypeRepository.save(result);
+        }
+
     }
 }

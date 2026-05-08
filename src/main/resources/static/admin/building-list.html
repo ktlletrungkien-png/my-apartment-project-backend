@@ -111,6 +111,7 @@
                             <button onclick="editBuilding(${item.id})">Sửa</button>
                             <button onclick="assignBuilding(${item.id})">Phân công</button>
                             <button onclick="deleteBuilding(${item.id})">Xóa</button>
+                            <button onclick="assignRentType(${item.id})">Loại hình thuê</button>
                         </td>
                     `;
                         tbody.appendChild(row);
@@ -152,6 +153,9 @@
         }
         function assignBuilding(id) {
             window.location.href = `/admin/assign-building.html?id=${id}`;
+        }
+        function assignRentType(id) {
+            window.location.href = `/admin/assign-renttype.html?id=${id}`;
         }
         window.onload = displayBuildings;
     </script>
