@@ -1,14 +1,20 @@
 package org.example.service;
 
 import org.example.entity.AssignmentBuildingEntity;
+import org.example.entity.AssignmentCustomerEntity;
 import org.example.entity.BuildingEntity;
+import org.example.entity.CustomerEntity;
 import org.example.entity.RoleEntity;
 import org.example.entity.UserEntity;
 import org.example.model.AssignmentRequest;
+import org.example.model.CustomerAssignmentRequest;
+import org.example.model.CustomerDTO;
 import org.example.model.StaffDTO;
 import org.example.model.UserDTO;
 import org.example.repository.AssignmentBuildingRepository;
+import org.example.repository.AssignmentCustomerRepository;
 import org.example.repository.BuildingRepository;
+import org.example.repository.CustomerRepository;
 import org.example.repository.RoleRepository;
 import org.example.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +34,11 @@ public class UserService {
     @Autowired
     private AssignmentBuildingRepository assignmentBuildingRepository;
     @Autowired
+    private AssignmentCustomerRepository assignmentCustomerRepository;
+    @Autowired
     private BuildingRepository buildingRepository;
+    @Autowired
+    private CustomerRepository customerRepository;
     public List<StaffDTO> getAllStaff(){
         return userRepository.findAllStaff().stream().map(item -> {
             StaffDTO dto = new StaffDTO();
@@ -62,6 +72,44 @@ public class UserService {
     }
     public List<Long> getAssignedStaffIds(Long buildingId) {
         return buildingRepository.findAssignedStaffIds(buildingId);
+    }
+
+    public List<CustomerDTO> getAllCustomers() {
+        return customerRepository.findAll().stream().map(item -> {
+            CustomerDTO dto = new CustomerDTO();
+            dto.setId(item.getId());
+            dto.setFullName(item.getFullname());
+            dto.setPhone(item.getPhone());
+            dto.setEmail(item.getEmail());
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void assignStaffToCustomer(CustomerAssignmentRequest request) {
+        assignmentCustomerRepository.deleteAssignmentByCustomerId(request.getCustomerId());
+
+        CustomerEntity customer = customerRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("Khong tim thay khach hang"));
+
+        if (request.getStaffIds() == null || request.getStaffIds().isEmpty()) {
+            return;
+        }
+
+        for (Long staffId : request.getStaffIds()) {
+            UserEntity staff = userRepository.findById(staffId)
+                    .orElseThrow(() -> new RuntimeException("Khong tim thay nhan vien"));
+
+            AssignmentCustomerEntity assignment = new AssignmentCustomerEntity();
+            assignment.setCustomerId(customer.getId());
+            assignment.setStaffId(staff.getId());
+
+            assignmentCustomerRepository.save(assignment);
+        }
+    }
+
+    public List<Long> getAssignedStaffIdsByCustomer(Long customerId) {
+        return assignmentCustomerRepository.findAssignedStaffIds(customerId);
     }
 
     public List<UserDTO> getAllUser(){

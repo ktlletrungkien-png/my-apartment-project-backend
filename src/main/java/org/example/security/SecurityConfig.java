@@ -49,7 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/renttype/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/renttype/**").hasRole("MANAGER")
 
-                        .requestMatchers("/api/users/**").hasRole("MANAGER")
+                        .requestMatchers("/api/users", "/api/users/**").hasRole("MANAGER")
                         .requestMatchers("/api/staff/**").hasAnyRole("STAFF", "MANAGER")
 
                         .requestMatchers("/admin/**").hasRole("MANAGER")

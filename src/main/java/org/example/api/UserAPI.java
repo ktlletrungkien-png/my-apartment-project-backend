@@ -1,6 +1,8 @@
 package org.example.api;
 
 import org.example.model.AssignmentRequest;
+import org.example.model.CustomerAssignmentRequest;
+import org.example.model.CustomerDTO;
 import org.example.model.StaffDTO;
 import org.example.model.UserDTO;
 import org.example.service.UserService;
@@ -33,6 +35,26 @@ public class UserAPI {
     @GetMapping("/assigned-staff/{buildingId}")
     public List<Long> getAssignedStaff(@PathVariable Long buildingId) {
         return userService.getAssignedStaffIds(buildingId);
+    }
+
+    @GetMapping("/customers")
+    public List<CustomerDTO> getAllCustomers(){
+        return userService.getAllCustomers();
+    }
+
+    @PostMapping("/assign-customer")
+    public String assignCustomer(@RequestBody CustomerAssignmentRequest request) {
+        try {
+            userService.assignStaffToCustomer(request);
+            return "Phan cong khach hang thanh cong";
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
+    @GetMapping("/assigned-staff-by-customer/{customerId}")
+    public List<Long> getAssignedStaffByCustomer(@PathVariable Long customerId) {
+        return userService.getAssignedStaffIdsByCustomer(customerId);
     }
 
     @GetMapping()
