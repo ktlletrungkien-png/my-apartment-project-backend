@@ -16,5 +16,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
             "join role r on ur.roleid=r.id " +
             "where r.code = 'staff'", nativeQuery = true)
     List<UserEntity> findAllStaff();
+
     Optional<UserEntity> findByUsername(String username);
 }

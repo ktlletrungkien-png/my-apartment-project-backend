@@ -2,6 +2,7 @@ package org.example.api;
 
 import org.example.model.AssignmentRequest;
 import org.example.model.StaffDTO;
+import org.example.model.UserDTO;
 import org.example.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -32,5 +33,10 @@ public class UserAPI {
     @GetMapping("/assigned-staff/{buildingId}")
     public List<Long> getAssignedStaff(@PathVariable Long buildingId) {
         return userService.getAssignedStaffIds(buildingId);
+    }
+
+    @GetMapping()
+    public List<UserDTO> getAllUser(){
+        return userService.getAllUser();
     }
 }
