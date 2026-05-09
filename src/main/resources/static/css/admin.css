@@ -1,0 +1,89 @@
+@import url("/css/staff.css");
+
+.brand-mark {
+    background: var(--brand-yellow);
+}
+
+.admin-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.admin-panel-actions {
+    padding: 0 24px 24px;
+}
+
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    padding: 24px;
+}
+
+.admin-form-grid .field-full {
+    grid-column: 1 / -1;
+}
+
+.checkbox-list {
+    display: grid;
+    gap: 10px;
+    padding: 24px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border: 1px solid var(--hairline-soft);
+    border-radius: var(--radius-xl);
+    background: linear-gradient(180deg, var(--canvas), var(--surface-soft));
+    transition: transform 180ms var(--ease-out), border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
+}
+
+.checkbox-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--hairline);
+    box-shadow: rgba(5, 0, 56, 0.06) 0 12px 24px -18px;
+}
+
+.checkbox-item input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--brand-yellow);
+}
+
+.form-help {
+    margin-top: 6px;
+    color: var(--steel);
+    font-size: 13px;
+}
+
+.table-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.table-actions .btn {
+    min-height: 34px;
+    padding: 8px 14px;
+}
+
+.btn-compact {
+    min-height: 34px;
+    padding: 8px 14px;
+}
+
+@media (max-width: 767px) {
+    .admin-form-grid {
+        grid-template-columns: 1fr;
+        padding: 20px;
+    }
+
+    .table-actions .btn,
+    .admin-actions .btn {
+        width: 100%;
+    }
+}
