@@ -1,170 +1,173 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Building Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý tòa nhà</title>
+    <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
-<div style="margin-bottom: 20px;">
-    <a href="/admin/dashboard.html">
-        <button>Dashboard</button>
-    </a>
-    <a href="/admin/profile.html">
-        <button>Thông tin cá nhân</button>
-    </a>
-    <a href="/logout">
-        <button>Đăng xuất</button>
-    </a>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html">
+            <span class="brand-mark">A</span>
+            <span>Manager Workspace</span>
+        </a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/dashboard.html">Dashboard</a>
+            <a class="btn" href="/admin/add-building.html">Thêm tòa nhà</a>
+            <a class="btn btn-secondary" href="/admin/customer-list.html">Khách hàng</a>
+            <a class="btn btn-secondary" href="/admin/renttype-list.html">Loại thuê</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Quản lý danh mục</span>
+                <h1 class="page-title">Tòa nhà</h1>
+                <p class="subtitle">Tìm kiếm, cập nhật thông tin tòa nhà, phân công nhân viên và gắn loại hình thuê.</p>
+            </div>
+            <span class="badge" id="buildingCount">Đang tải</span>
+        </section>
+
+        <section class="panel-card">
+            <div class="panel-header">
+                <div>
+                    <h2 class="section-title">Bộ lọc tìm kiếm</h2>
+                    <p class="section-text">Để trống các trường không cần lọc.</p>
+                </div>
+            </div>
+            <div class="admin-form-grid">
+                <div class="field"><label for="name">Tên tòa nhà</label><input type="text" id="name" placeholder="Tên tòa nhà"></div>
+                <div class="field"><label for="address">Địa chỉ</label><input type="text" id="address" placeholder="Địa chỉ"></div>
+                <div class="field"><label for="rentArea">Diện tích thuê</label><input type="number" id="rentArea" placeholder="m2"></div>
+                <div class="field"><label for="staffName">Nhân viên</label><input type="text" id="staffName" placeholder="Tên nhân viên"></div>
+                <div class="field"><label for="rentPriceFrom">Giá thuê từ</label><input type="number" id="rentPriceFrom" placeholder="Triệu"></div>
+                <div class="field"><label for="rentPriceTo">Giá thuê đến</label><input type="number" id="rentPriceTo" placeholder="Triệu"></div>
+                <div class="admin-actions field-full">
+                    <button class="btn" type="button" onclick="displayBuildings()">Tìm kiếm</button>
+                    <button class="btn btn-secondary" type="button" onclick="resetSearch()">Làm mới</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="data-card">
+            <div class="data-header">
+                <div>
+                    <h2 class="section-title">Danh sách tòa nhà</h2>
+                    <p class="section-text">Các hành động quản trị nằm ở cột cuối bảng.</p>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên tòa nhà</th>
+                        <th>Địa chỉ</th>
+                        <th>Diện tích thuê</th>
+                        <th>Giá thuê</th>
+                        <th>Quản lý</th>
+                        <th>Nhân viên phụ trách</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody id="result-table"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
 </div>
-<h1>Quản lý tòa nhà</h1>
-<div style="margin-bottom: 20px;">
-    <a href="/admin/add-building.html">
-        <button>Thêm tòa nhà</button>
-    </a>
-    <a href="/admin/renttype-list.html">
-        <button>Loai hinh thue</button>
-    </a>
-    <a href="/admin/customer-list.html">
-        <button>Khach hang</button>
-    </a>
-</div>
 
+<script>
+    function resetSearch() {
+        ['name', 'address', 'rentArea', 'rentPriceFrom', 'rentPriceTo', 'staffName'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+        displayBuildings();
+    }
 
-<h2>Danh sách tòa nhà</h2>
+    function displayBuildings() {
+        const queryParams = new URLSearchParams();
+        ['name', 'address', 'rentArea', 'rentPriceFrom', 'rentPriceTo', 'staffName'].forEach(id => {
+            const value = document.getElementById(id).value.trim();
+            if (value) queryParams.append(id, value);
+        });
 
-<div style="margin-bottom: 20px;">
-    <input type="text" id="name" placeholder="Tên tòa nhà">
-    <input type="text" id="address" placeholder="Địa chỉ">
-    <input type="number" id="rentArea" placeholder="Diện tích thuê">
-    <input type="number" id="rentPriceFrom" placeholder="Giá thuê từ">
-    <input type="number" id="rentPriceTo" placeholder="Giá thuê đến">
-    <input type="text" id="staffName" placeholder="Tên nhân viên">
-    <button onclick="displayBuildings()">Tìm kiếm</button>
-    <button onclick="resetSearch()">Làm mới</button>
-</div>
-<table style="border: 1px solid #333333">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Tên tòa nhà</th>
-        <th>Địa chỉ</th>
-        <th>Diện tích thuê</th>
-        <th>Giá thuê</th>
-        <th>Quản lý</th>
-        <th>Nhân viên phụ trách</th>
-        <th>Thao tác</th>
-    </tr>
-    </thead>
-    <tbody id="result-table">
-    </tbody>
+        fetch(`/api/building?${queryParams.toString()}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Lỗi ' + response.status);
+                return response.json();
+            })
+            .then(data => {
+                const tbody = document.getElementById('result-table');
+                const count = document.getElementById('buildingCount');
+                tbody.innerHTML = '';
 
-    <script>
-        function resetSearch() {
-            document.getElementById('name').value = '';
-            document.getElementById('address').value = '';
-            document.getElementById('rentArea').value = '';
-            document.getElementById('rentPriceFrom').value = '';
-            document.getElementById('rentPriceTo').value = '';
-            document.getElementById('staffName').value = '';
-            displayBuildings();
-        }
+                if (!data || data.length === 0) {
+                    count.textContent = '0 tòa nhà';
+                    tbody.innerHTML = '<tr><td colspan="8">Không có dữ liệu tòa nhà</td></tr>';
+                    return;
+                }
 
-        function displayBuildings() {
-            const name = document.getElementById('name').value;
-            const address = document.getElementById('address').value;
-            const rentArea = document.getElementById('rentArea').value;
-            const rentPriceFrom = document.getElementById('rentPriceFrom').value;
-            const rentPriceTo = document.getElementById('rentPriceTo').value;
-            const staffName = document.getElementById('staffName').value;
+                count.textContent = `${data.length} tòa nhà`;
 
-            let queryParams = new URLSearchParams();
-
-            if (name) queryParams.append('name', name);
-            if (address) queryParams.append('address', address);
-            if (rentArea) queryParams.append('rentArea', rentArea);
-            if (rentPriceFrom) queryParams.append('rentPriceFrom', rentPriceFrom);
-            if (rentPriceTo) queryParams.append('rentPriceTo', rentPriceTo);
-            if (staffName) queryParams.append('staffName', staffName);
-            fetch(`http://localhost:8081/api/building?${queryParams.toString()}`)
-                .then(response => {
-                    if (!response.ok) throw new Error("Lỗi " + response.status);
-                    return response.json();
-                })
-                .then(data => {
-                    const tbody = document.getElementById('result-table');
-                    tbody.innerHTML = '';
-
-                    if (!data || data.length === 0) {
-                        tbody.innerHTML = `
-                        <tr>
-                            <td colspan="8">Không có dữ liệu tòa nhà</td>
-                        </tr>
-                    `;
-                        return;
-                    }
-
-                    data.forEach(item => {
-                        const row = document.createElement("tr");
-                        row.innerHTML = `
-                        <td>${item.id ?? ""}</td>
-                        <td>${item.name ?? ""}</td>
-                        <td>${item.address ?? ""}</td>
-                        <td>${item.rentAreas ?? ""}</td>
-                        <td>${item.rentPrice ?? ""}</td>
-                        <td>${item.managerName ?? ""}</td>
-                        <td>${item.staffName ?? ""}</td>
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.id ?? ''}</td>
+                        <td>${item.name ?? ''}</td>
+                        <td>${item.address ?? ''}</td>
+                        <td>${item.rentAreas ?? ''}</td>
+                        <td>${item.rentPrice ?? ''}</td>
+                        <td>${item.managerName ?? ''}</td>
+                        <td>${item.staffName ?? ''}</td>
                         <td>
-                            <button onclick="editBuilding(${item.id})">Sửa</button>
-                            <button onclick="assignBuilding(${item.id})">Phân công</button>
-                            <button onclick="deleteBuilding(${item.id})">Xóa</button>
-                            <button onclick="assignRentType(${item.id})">Loại hình thuê</button>
+                            <div class="table-actions">
+                                <button class="btn btn-compact" type="button" onclick="editBuilding(${item.id})">Sửa</button>
+                                <button class="btn btn-compact" type="button" onclick="assignBuilding(${item.id})">Phân công</button>
+                                <button class="btn btn-secondary btn-compact" type="button" onclick="assignRentType(${item.id})">Loại thuê</button>
+                                <button class="btn btn-danger btn-compact" type="button" onclick="deleteBuilding(${item.id})">Xóa</button>
+                            </div>
                         </td>
                     `;
-                        tbody.appendChild(row);
-                    });
-                })
-                .catch(error => {
-                    console.error("Lỗi: " + error);
-                    const tbody = document.getElementById('result-table');
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="8">Không tải được dữ liệu tòa nhà</td>
-                        </tr>
-                    `;
+                    tbody.appendChild(row);
                 });
-        }
-
-        function editBuilding(id) {
-            alert("Sửa toà nhà với ID = " + id);
-            window.location.href = `/admin/add-building.html?id=${id}`;
-        }
-
-        function deleteBuilding(id) {
-            const confirmed = confirm("Bạn có chắc muốn xóa tòa nhà này không?");
-            if (!confirmed) {
-                return;
-            }
-
-            fetch(`http://localhost:8081/api/building/${id}`, {
-                method: "DELETE"
             })
-                .then(response => response.text())
-                .then(data => {
-                    alert(data);
-                    displayBuildings();
-                })
-                .catch(error => {
-                    alert("Có lỗi xảy ra khi xóa: " + error.message);
-                });
-        }
-        function assignBuilding(id) {
-            window.location.href = `/admin/assign-building.html?id=${id}`;
-        }
-        function assignRentType(id) {
-            window.location.href = `/admin/assign-renttype.html?id=${id}`;
-        }
-        window.onload = displayBuildings;
-    </script>
-</table>
+            .catch(error => {
+                document.getElementById('buildingCount').textContent = 'Lỗi tải';
+                document.getElementById('result-table').innerHTML = '<tr><td colspan="8">Không tải được dữ liệu tòa nhà</td></tr>';
+                console.error(error);
+            });
+    }
+
+    function editBuilding(id) {
+        window.location.href = `/admin/add-building.html?id=${id}`;
+    }
+
+    function deleteBuilding(id) {
+        if (!confirm('Bạn có chắc muốn xóa tòa nhà này không?')) return;
+
+        fetch(`/api/building/${id}`, { method: 'DELETE' })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                displayBuildings();
+            })
+            .catch(error => alert('Có lỗi xảy ra khi xóa: ' + error.message));
+    }
+
+    function assignBuilding(id) {
+        window.location.href = `/admin/assign-building.html?id=${id}`;
+    }
+
+    function assignRentType(id) {
+        window.location.href = `/admin/assign-renttype.html?id=${id}`;
+    }
+
+    window.addEventListener('load', displayBuildings);
+</script>
 </body>
 </html>

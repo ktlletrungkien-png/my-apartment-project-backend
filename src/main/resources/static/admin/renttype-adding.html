@@ -1,80 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Rent type adding/editing</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm/sửa loại hình thuê</title>
+    <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
-    <h2 id="form-title">Them loai hinh thue</h2>
-    <form>
-        <label>Mã loại</label>
-        <input id="code">
-        <label>Tên loại hình thuê</label>
-        <input id="name">
-        <button type="button" id="add-rent-type">Thêm</button>
-    </form>
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const renttypeid = urlParams.get('id');
-        if (renttypeid){
-            document.getElementById('form-title').innerHTML='Sua loai hinh thue';
-            document.getElementById('add-rent-type').innerHTML='Sua';
-        }
-        document.getElementById('add-rent-type').addEventListener('click', addRentType);
-        loadRentTypeDetail();
-        function loadRentTypeDetail(){
-            if (!renttypeid) return;
-            fetch(`http://localhost:8081/api/renttype/${renttypeid}`)
-                .then(response =>{
-                    if (!response.ok) throw new Error("ERROR "+ response.status);
-                    return response.json();
-                })
-                .then(data =>{
-                    document.getElementById('code').value = data.code ?? '';
-                    document.getElementById('name').value = data.name ?? '';
-                })
-                .catch(error =>{
-                    alert("Loi tai du lieu" + error.message);
-                });
-        }
-        function addRentType(){
-            const code = document.getElementById('code').value.trim();
-            const name = document.getElementById('name').value.trim();
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html"><span class="brand-mark">A</span><span>Manager Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/renttype-list.html">Quay lại loại thuê</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
 
-            if (code === ''){
-                alert('Ma la truong bat buoc');
-                return;
-            }
-            if (name === ''){
-                alert('Ten la truong bat buoc');
-                return;
-            }
+    <main class="staff-page staff-page-narrow">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Loại hình thuê</span>
+                <h1 class="page-title" id="form-title">Thêm loại hình thuê</h1>
+                <p class="subtitle">Tạo hoặc cập nhật mã loại hình thuê để sử dụng khi cấu hình tòa nhà.</p>
+            </div>
+        </section>
 
-            const renttype = {
-                code: code,
-                name: name
-            };
-            const url = renttypeid
-            ? `http://localhost:8081/api/renttype/${renttypeid}`
-            : `http://localhost:8081/api/renttype`;
-            const method = renttypeid ? "PUT" : "POST";
-            fetch(url, {
-                method: method,
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(renttype)
+        <section class="panel-card">
+            <div class="panel-header"><div><h2 class="section-title">Thông tin loại thuê</h2><p class="section-text">Mã loại và tên loại là bắt buộc.</p></div></div>
+            <form class="admin-form-grid">
+                <div class="field"><label for="code">Mã loại</label><input id="code"></div>
+                <div class="field"><label for="name">Tên loại hình thuê</label><input id="name"></div>
+                <div class="admin-actions field-full">
+                    <button class="btn" type="button" id="add-rent-type">Thêm</button>
+                    <a class="btn btn-secondary" href="/admin/renttype-list.html">Quay lại</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const renttypeid = urlParams.get('id');
+    if (renttypeid) {
+        document.getElementById('form-title').innerText = 'Sửa loại hình thuê';
+        document.getElementById('add-rent-type').innerText = 'Cập nhật';
+    }
+    document.getElementById('add-rent-type').addEventListener('click', addRentType);
+    loadRentTypeDetail();
+
+    function loadRentTypeDetail() {
+        if (!renttypeid) return;
+        fetch(`/api/renttype/${renttypeid}`)
+            .then(response => {
+                if (!response.ok) throw new Error('ERROR ' + response.status);
+                return response.json();
             })
-                .then(response => response.text())
-                .then(data => {
-                    alert(data);
-                    window.location.href = "/admin/renttype-list.html";
+            .then(data => {
+                document.getElementById('code').value = data.code ?? '';
+                document.getElementById('name').value = data.name ?? '';
+            })
+            .catch(error => alert('Lỗi tải dữ liệu: ' + error.message));
+    }
 
-                })
-                .catch(error => {
-                    alert("Có lỗi xảy ra: " + error.message);
-                });
-        }
-    </script>
+    function addRentType() {
+        const code = document.getElementById('code').value.trim();
+        const name = document.getElementById('name').value.trim();
+        if (!code) return alert('Mã là trường bắt buộc');
+        if (!name) return alert('Tên là trường bắt buộc');
+
+        fetch(renttypeid ? `/api/renttype/${renttypeid}` : '/api/renttype', {
+            method: renttypeid ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code, name })
+        })
+            .then(response => response.text())
+            .then(data => { alert(data); window.location.href = '/admin/renttype-list.html'; })
+            .catch(error => alert('Có lỗi xảy ra: ' + error.message));
+    }
+</script>
 </body>
 </html>

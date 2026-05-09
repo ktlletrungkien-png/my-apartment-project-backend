@@ -2,118 +2,87 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Phan cong khach hang</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân công khách hàng</title>
+    <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
-<h2>Phan cong nhan vien cho khach hang</h2>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html"><span class="brand-mark">A</span><span>Manager Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/customer-list.html">Quay lại khách hàng</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
 
-<div>
-    <a href="/admin/customer-list.html">
-        <button type="button">Quay lai</button>
-    </a>
+    <main class="staff-page staff-page-narrow">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Phân công</span>
+                <h1 class="page-title">Nhân viên phụ trách khách hàng</h1>
+                <p class="subtitle">Chọn nhân viên chăm sóc khách hàng này.</p>
+            </div>
+        </section>
+
+        <section class="panel-card">
+            <div class="panel-header"><div><h2 class="section-title">Danh sách nhân viên</h2><p class="section-text">Nhân viên đã được phân công sẽ được đánh dấu sẵn.</p></div></div>
+            <div class="checkbox-list" id="staff-list">Đang tải danh sách nhân viên...</div>
+            <div class="admin-actions admin-panel-actions"><button class="btn" type="button" onclick="saveAssignment()">Lưu phân công</button></div>
+        </section>
+    </main>
 </div>
-
-<br>
-<div id="staff-list">
-    Dang tai danh sach nhan vien...
-</div>
-
-<br>
-
-<button type="button" onclick="saveAssignment()">Luu phan cong</button>
 
 <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const customerId = urlParams.get("id");
+    const customerId = urlParams.get('id');
     let assignedStaffIds = [];
 
     function loadStaff() {
-        fetch("http://localhost:8081/api/users/staff")
+        fetch('/api/users/staff')
             .then(response => {
-                if (!response.ok) {
-                    throw new Error("Khong tai duoc danh sach staff");
-                }
+                if (!response.ok) throw new Error('Không tải được danh sách staff');
                 return response.json();
             })
             .then(data => {
-                const container = document.getElementById("staff-list");
-
+                const container = document.getElementById('staff-list');
                 if (!data || data.length === 0) {
-                    container.innerHTML = "Khong co nhan vien nao.";
+                    container.innerHTML = 'Không có nhân viên nào.';
                     return;
                 }
-
-                let html = "";
-                data.forEach(item => {
-                    const checked = assignedStaffIds.includes(item.id) ? "checked" : "";
-
-                    html += `
-                        <div>
-                            <label>
-                                <input type="checkbox" name="staffIds" value="${item.id}" ${checked}>
-                                ${item.fullName}
-                            </label>
-                        </div>
-                    `;
-                });
-
-                container.innerHTML = html;
+                container.innerHTML = data.map(item => {
+                    const checked = assignedStaffIds.includes(item.id) ? 'checked' : '';
+                    return `<label class="checkbox-item"><input type="checkbox" name="staffIds" value="${item.id}" ${checked}>${item.fullName}</label>`;
+                }).join('');
             })
-            .catch(error => {
-                document.getElementById("staff-list").innerHTML = "Loi: " + error.message;
-            });
+            .catch(error => document.getElementById('staff-list').innerHTML = 'Lỗi: ' + error.message);
     }
 
     function saveAssignment() {
-        if (!customerId) {
-            alert("Khong tim thay ID khach hang.");
-            return;
-        }
-
-        const checkedStaff = document.querySelectorAll('input[name="staffIds"]:checked');
-        const staffIds = Array.from(checkedStaff).map(item => parseInt(item.value));
-
-        const data = {
-            customerId: parseInt(customerId),
-            staffIds: staffIds
-        };
-
-        fetch("http://localhost:8081/api/users/assign-customer", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data)
+        if (!customerId) return alert('Không tìm thấy ID khách hàng.');
+        const staffIds = Array.from(document.querySelectorAll('input[name="staffIds"]:checked')).map(item => parseInt(item.value));
+        fetch('/api/users/assign-customer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customerId: parseInt(customerId), staffIds })
         })
             .then(response => response.text())
-            .then(message => {
-                alert(message);
-                window.location.href = "/admin/customer-list.html";
-            })
-            .catch(error => {
-                alert("Co loi xay ra: " + error.message);
-            });
+            .then(message => { alert(message); window.location.href = '/admin/customer-list.html'; })
+            .catch(error => alert('Có lỗi xảy ra: ' + error.message));
     }
 
     function loadAssignedStaff() {
         if (!customerId) return Promise.resolve();
-
-        return fetch(`http://localhost:8081/api/users/assigned-staff-by-customer/${customerId}`)
+        return fetch(`/api/users/assigned-staff-by-customer/${customerId}`)
             .then(response => {
-                if (!response.ok) {
-                    throw new Error("Khong tai duoc danh sach staff da phan cong");
-                }
+                if (!response.ok) throw new Error('Không tải được danh sách staff đã phân công');
                 return response.json();
             })
-            .then(data => {
-                assignedStaffIds = data || [];
-            })
-            .catch(error => {
-                alert("Loi tai phan cong cu: " + error.message);
-            });
+            .then(data => assignedStaffIds = data || [])
+            .catch(error => alert('Lỗi tải phân công cũ: ' + error.message));
     }
 
-    loadAssignedStaff().then(() => loadStaff());
+    loadAssignedStaff().then(loadStaff);
 </script>
 </body>
 </html>

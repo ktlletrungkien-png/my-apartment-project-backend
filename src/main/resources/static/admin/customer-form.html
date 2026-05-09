@@ -2,97 +2,87 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Thong tin khach hang</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin khách hàng</title>
+    <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
-<div style="margin-bottom: 20px;">
-    <a href="/admin/customer-list.html">
-        <button type="button">Quay lai</button>
-    </a>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html"><span class="brand-mark">A</span><span>Manager Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/customer-list.html">Quay lại khách hàng</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page staff-page-narrow">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Hồ sơ khách hàng</span>
+                <h1 class="page-title" id="page-title">Thêm khách hàng</h1>
+                <p class="subtitle">Cập nhật thông tin liên hệ cơ bản của khách hàng.</p>
+            </div>
+        </section>
+
+        <section class="panel-card">
+            <div class="panel-header">
+                <div>
+                    <h2 class="section-title">Thông tin liên hệ</h2>
+                    <p class="section-text">Họ tên là trường bắt buộc.</p>
+                </div>
+            </div>
+            <form class="admin-form-grid" id="customer-form">
+                <div class="field field-full"><label for="fullName">Họ tên</label><input type="text" id="fullName" required></div>
+                <div class="field"><label for="phone">Số điện thoại</label><input type="text" id="phone"></div>
+                <div class="field"><label for="email">Email</label><input type="email" id="email"></div>
+                <div class="admin-actions field-full">
+                    <button class="btn" type="button" onclick="saveCustomer()">Lưu</button>
+                    <a class="btn btn-secondary" href="/admin/customer-list.html">Quay lại</a>
+                </div>
+            </form>
+        </section>
+    </main>
 </div>
-
-<h1 id="page-title">Them khach hang</h1>
-
-<form id="customer-form">
-    <label>Ho ten</label>
-    <input type="text" id="fullName" required>
-    <br>
-
-    <label>So dien thoai</label>
-    <input type="text" id="phone">
-    <br>
-
-    <label>Email</label>
-    <input type="email" id="email">
-    <br>
-
-    <button type="button" onclick="saveCustomer()">Luu</button>
-</form>
 
 <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const customerId = urlParams.get("id");
+    const customerId = urlParams.get('id');
 
     function loadCustomer() {
-        if (!customerId) {
-            return;
-        }
-
-        document.getElementById("page-title").innerText = "Sua khach hang";
-
-        fetch(`http://localhost:8081/api/users/customers/${customerId}`)
+        if (!customerId) return;
+        document.getElementById('page-title').innerText = 'Sửa khách hàng';
+        fetch(`/api/users/customers/${customerId}`)
             .then(response => {
-                if (!response.ok) {
-                    throw new Error("Khong tai duoc thong tin khach hang");
-                }
+                if (!response.ok) throw new Error('Không tải được thông tin khách hàng');
                 return response.json();
             })
             .then(data => {
-                document.getElementById("fullName").value = data.fullName ?? "";
-                document.getElementById("phone").value = data.phone ?? "";
-                document.getElementById("email").value = data.email ?? "";
+                document.getElementById('fullName').value = data.fullName ?? '';
+                document.getElementById('phone').value = data.phone ?? '';
+                document.getElementById('email').value = data.email ?? '';
             })
-            .catch(error => {
-                alert(error.message);
-            });
+            .catch(error => alert(error.message));
     }
 
     function saveCustomer() {
         const customerData = {
-            fullName: document.getElementById("fullName").value.trim(),
-            phone: document.getElementById("phone").value.trim(),
-            email: document.getElementById("email").value.trim()
+            fullName: document.getElementById('fullName').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            email: document.getElementById('email').value.trim()
         };
-
-        if (!customerData.fullName) {
-            alert("Vui long nhap ho ten khach hang");
-            return;
-        }
-
-        const url = customerId
-            ? `http://localhost:8081/api/users/customers/${customerId}`
-            : "http://localhost:8081/api/users/customers";
-
-        const method = customerId ? "PUT" : "POST";
-
-        fetch(url, {
-            method: method,
-            headers: {
-                "Content-Type": "application/json"
-            },
+        if (!customerData.fullName) return alert('Vui lòng nhập họ tên khách hàng');
+        fetch(customerId ? `/api/users/customers/${customerId}` : '/api/users/customers', {
+            method: customerId ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(customerData)
         })
             .then(response => response.text())
-            .then(message => {
-                alert(message);
-                window.location.href = "/admin/customer-list.html";
-            })
-            .catch(error => {
-                alert("Co loi xay ra: " + error.message);
-            });
+            .then(message => { alert(message); window.location.href = '/admin/customer-list.html'; })
+            .catch(error => alert('Có lỗi xảy ra: ' + error.message));
     }
 
-    window.onload = loadCustomer;
+    window.addEventListener('load', loadCustomer);
 </script>
 </body>
 </html>

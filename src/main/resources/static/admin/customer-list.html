@@ -2,111 +2,100 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Quan ly khach hang</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý khách hàng</title>
+    <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
-<div style="margin-bottom: 20px;">
-    <a href="/admin/dashboard.html">
-        <button type="button">Dashboard</button>
-    </a>
-    <a href="/admin/building-list.html">
-        <button type="button">Quay lai</button>
-    </a>
-    <a href="/admin/customer-form.html">
-        <button type="button">Them khach hang</button>
-    </a>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html"><span class="brand-mark">A</span><span>Manager Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/dashboard.html">Dashboard</a>
+            <a class="btn btn-secondary" href="/admin/building-list.html">Tòa nhà</a>
+            <a class="btn" href="/admin/customer-form.html">Thêm khách hàng</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Quản lý khách hàng</span>
+                <h1 class="page-title">Danh sách khách hàng</h1>
+                <p class="subtitle">Cập nhật hồ sơ khách hàng và phân công nhân viên phụ trách.</p>
+            </div>
+            <span class="badge" id="customerCount">Đang tải</span>
+        </section>
+
+        <section class="data-card">
+            <div class="data-header">
+                <div>
+                    <h2 class="section-title">Khách hàng</h2>
+                    <p class="section-text">Thực hiện thao tác sửa, phân công và xóa.</p>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr><th>ID</th><th>Họ tên</th><th>Số điện thoại</th><th>Email</th><th>Thao tác</th></tr>
+                    </thead>
+                    <tbody id="customer-table"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
 </div>
-
-<h1>Danh sach khach hang</h1>
-
-<table border="1" cellpadding="6" cellspacing="0">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Ho ten</th>
-        <th>So dien thoai</th>
-        <th>Email</th>
-        <th>Thao tac</th>
-    </tr>
-    </thead>
-    <tbody id="customer-table"></tbody>
-</table>
 
 <script>
     function loadCustomers() {
-        fetch("http://localhost:8081/api/users/customers")
+        fetch('/api/users/customers')
             .then(response => {
-                if (!response.ok) {
-                    throw new Error("Khong tai duoc danh sach khach hang");
-                }
+                if (!response.ok) throw new Error('Không tải được danh sách khách hàng');
                 return response.json();
             })
             .then(data => {
-                const tbody = document.getElementById("customer-table");
-                tbody.innerHTML = "";
-
+                const tbody = document.getElementById('customer-table');
+                const count = document.getElementById('customerCount');
+                tbody.innerHTML = '';
                 if (!data || data.length === 0) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="5">Khong co khach hang nao</td>
-                        </tr>
-                    `;
+                    count.textContent = '0 khách hàng';
+                    tbody.innerHTML = '<tr><td colspan="5">Không có khách hàng nào</td></tr>';
                     return;
                 }
-
+                count.textContent = `${data.length} khách hàng`;
                 data.forEach(item => {
-                    const row = document.createElement("tr");
+                    const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${item.id ?? ""}</td>
-                        <td>${item.fullName ?? ""}</td>
-                        <td>${item.phone ?? ""}</td>
-                        <td>${item.email ?? ""}</td>
-                        <td>
-                            <button type="button" onclick="editCustomer(${item.id})">Sua</button>
-                            <button type="button" onclick="assignCustomer(${item.id})">Phan cong</button>
-                            <button type="button" onclick="deleteCustomer(${item.id})">Xoa</button>
-                        </td>
+                        <td>${item.id ?? ''}</td>
+                        <td>${item.fullName ?? ''}</td>
+                        <td>${item.phone ?? ''}</td>
+                        <td>${item.email ?? ''}</td>
+                        <td><div class="table-actions">
+                            <button class="btn btn-compact" type="button" onclick="editCustomer(${item.id})">Sửa</button>
+                            <button class="btn btn-compact" type="button" onclick="assignCustomer(${item.id})">Phân công</button>
+                            <button class="btn btn-danger btn-compact" type="button" onclick="deleteCustomer(${item.id})">Xóa</button>
+                        </div></td>
                     `;
                     tbody.appendChild(row);
                 });
             })
             .catch(error => {
-                document.getElementById("customer-table").innerHTML = `
-                    <tr>
-                        <td colspan="5">Loi: ${error.message}</td>
-                    </tr>
-                `;
+                document.getElementById('customerCount').textContent = 'Lỗi tải';
+                document.getElementById('customer-table').innerHTML = `<tr><td colspan="5">Lỗi: ${error.message}</td></tr>`;
             });
     }
 
-    function editCustomer(id) {
-        window.location.href = `/admin/customer-form.html?id=${id}`;
-    }
-
-    function assignCustomer(id) {
-        window.location.href = `/admin/assign-customer.html?id=${id}`;
-    }
-
+    function editCustomer(id) { window.location.href = `/admin/customer-form.html?id=${id}`; }
+    function assignCustomer(id) { window.location.href = `/admin/assign-customer.html?id=${id}`; }
     function deleteCustomer(id) {
-        const confirmed = confirm("Ban co chac muon xoa khach hang nay khong?");
-        if (!confirmed) {
-            return;
-        }
-
-        fetch(`http://localhost:8081/api/users/customers/${id}`, {
-            method: "DELETE"
-        })
+        if (!confirm('Bạn có chắc muốn xóa khách hàng này không?')) return;
+        fetch(`/api/users/customers/${id}`, { method: 'DELETE' })
             .then(response => response.text())
-            .then(message => {
-                alert(message);
-                loadCustomers();
-            })
-            .catch(error => {
-                alert("Co loi xay ra khi xoa: " + error.message);
-            });
+            .then(message => { alert(message); loadCustomers(); })
+            .catch(error => alert('Có lỗi xảy ra khi xóa: ' + error.message));
     }
-
-    window.onload = loadCustomers;
+    window.addEventListener('load', loadCustomers);
 </script>
 </body>
 </html>

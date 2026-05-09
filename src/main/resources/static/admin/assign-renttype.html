@@ -1,95 +1,88 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Assign Rent Type</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gán loại hình thuê</title>
+    <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
-<h2>Gan loai hinh thue cho toa nha</h2>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html"><span class="brand-mark">A</span><span>Manager Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/building-list.html">Quay lại tòa nhà</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
 
-<div>
-  <a href="/admin/building-list.html">
-    <button type="button">Quay lai</button>
-  </a>
+    <main class="staff-page staff-page-narrow">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Cấu hình tòa nhà</span>
+                <h1 class="page-title">Gán loại hình thuê</h1>
+                <p class="subtitle">Chọn các loại hình thuê áp dụng cho tòa nhà này.</p>
+            </div>
+        </section>
+
+        <section class="panel-card">
+            <div class="panel-header">
+                <div>
+                    <h2 class="section-title">Loại hình thuê</h2>
+                    <p class="section-text">Các loại đã gán sẽ được đánh dấu sẵn.</p>
+                </div>
+            </div>
+            <div class="checkbox-list" id="renttype-list">Đang tải dữ liệu...</div>
+            <div class="admin-actions admin-panel-actions">
+                <button class="btn" type="button" onclick="saveRentTypes()">Lưu</button>
+            </div>
+        </section>
+    </main>
 </div>
 
-<div id="renttype-list"></div>
-
-<button type="button" onclick="saveRentTypes()">Luu</button>
-
 <script>
-  const urlParams = new URLSearchParams(window.location.search);
-  const buildingId = urlParams.get("id");
+    const urlParams = new URLSearchParams(window.location.search);
+    const buildingId = urlParams.get('id');
 
-  async function loadRentTypes() {
-    if (!buildingId) {
-      alert("Khong tim thay buildingId");
-      return;
+    async function loadRentTypes() {
+        if (!buildingId) return alert('Không tìm thấy buildingId');
+
+        try {
+            const [allRentTypesResponse, assignedResponse] = await Promise.all([
+                fetch('/api/renttype'),
+                fetch(`/api/building/${buildingId}/renttypes`)
+            ]);
+            if (!allRentTypesResponse.ok) throw new Error('Không tải được danh sách loại hình thuê');
+            if (!assignedResponse.ok) throw new Error('Không tải được danh sách đã gán');
+
+            const allRentTypes = await allRentTypesResponse.json();
+            const assignedIds = await assignedResponse.json();
+            const container = document.getElementById('renttype-list');
+            container.innerHTML = allRentTypes.map(item => {
+                const checked = assignedIds.includes(item.id) ? 'checked' : '';
+                return `<label class="checkbox-item"><input type="checkbox" value="${item.id}" ${checked}>${item.name}</label>`;
+            }).join('');
+        } catch (error) {
+            alert(error.message);
+        }
     }
 
-    try {
-      const [allRentTypesResponse, assignedResponse] = await Promise.all([
-        fetch("http://localhost:8081/api/renttype"),
-        fetch(`http://localhost:8081/api/building/${buildingId}/renttypes`)
-      ]);
-
-      if (!allRentTypesResponse.ok) {
-        throw new Error("Khong tai duoc danh sach loai hinh thue");
-      }
-
-      if (!assignedResponse.ok) {
-        throw new Error("Khong tai duoc danh sach da gan");
-      }
-
-      const allRentTypes = await allRentTypesResponse.json();
-      const assignedIds = await assignedResponse.json();
-
-      const container = document.getElementById("renttype-list");
-      container.innerHTML = "";
-
-      allRentTypes.forEach(item => {
-        const checked = assignedIds.includes(item.id) ? "checked" : "";
-        const row = document.createElement("div");
-        row.innerHTML = `
-                    <label>
-                        <input type="checkbox" value="${item.id}" ${checked}>
-                        ${item.name}
-                    </label>
-                `;
-        container.appendChild(row);
-      });
-    } catch (error) {
-      alert(error.message);
-    }
-  }
-
-  function saveRentTypes() {
-    const checkedBoxes = document.querySelectorAll('#renttype-list input[type="checkbox"]:checked');
-    const rentTypeIds = Array.from(checkedBoxes).map(item => Number(item.value));
-
-    const payload = {
-      buildingId: Number(buildingId),
-      rentTypeIds: rentTypeIds
-    };
-
-    fetch("http://localhost:8081/api/building/renttypes", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    })
+    function saveRentTypes() {
+        const rentTypeIds = Array.from(document.querySelectorAll('#renttype-list input[type="checkbox"]:checked')).map(item => Number(item.value));
+        fetch('/api/building/renttypes', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ buildingId: Number(buildingId), rentTypeIds })
+        })
             .then(response => response.text())
             .then(data => {
-              alert(data);
-              window.location.href = "/admin/building-list.html";
+                alert(data);
+                window.location.href = '/admin/building-list.html';
             })
-            .catch(error => {
-              alert("Co loi xay ra: " + error.message);
-            });
-  }
+            .catch(error => alert('Có lỗi xảy ra: ' + error.message));
+    }
 
-  window.onload = loadRentTypes;
+    window.addEventListener('load', loadRentTypes);
 </script>
 </body>
 </html>

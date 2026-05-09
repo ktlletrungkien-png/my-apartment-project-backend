@@ -2,25 +2,43 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phân công nhân viên</title>
+    <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
-<h2>Phân công nhân viên cho tòa nhà</h2>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html"><span class="brand-mark">A</span><span>Manager Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/building-list.html">Quay lại tòa nhà</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
 
-<div>
-    <a href="/admin/building-list.html">
-        <button type="button">Quay lại</button>
-    </a>
+    <main class="staff-page staff-page-narrow">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Phân công</span>
+                <h1 class="page-title">Nhân viên phụ trách tòa nhà</h1>
+                <p class="subtitle">Chọn một hoặc nhiều nhân viên để gán vào tòa nhà này.</p>
+            </div>
+        </section>
+
+        <section class="panel-card">
+            <div class="panel-header">
+                <div>
+                    <h2 class="section-title">Danh sách nhân viên</h2>
+                    <p class="section-text">Các nhân viên đã được phân công sẽ được đánh dấu sẵn.</p>
+                </div>
+            </div>
+            <div class="checkbox-list" id="staff-list">Đang tải danh sách nhân viên...</div>
+            <div class="admin-actions admin-panel-actions">
+                <button class="btn" type="button" onclick="saveAssignment()">Lưu phân công</button>
+            </div>
+        </section>
+    </main>
 </div>
-
-<br>
-<div id="staff-list">
-    Đang tải danh sách nhân viên...
-</div>
-
-<br>
-
-<button type="button" onclick="saveAssignment()">Lưu phân công</button>
 
 <script>
     const urlParams = new URLSearchParams(window.location.search);
@@ -28,90 +46,54 @@
     let assignedStaffIds = [];
 
     function loadStaff() {
-        fetch("http://localhost:8081/api/users/staff")
+        fetch('/api/users/staff')
             .then(response => {
-                if (!response.ok) {
-                    throw new Error("Không tải được danh sách staff");
-                }
+                if (!response.ok) throw new Error('Không tải được danh sách staff');
                 return response.json();
             })
             .then(data => {
-                const container = document.getElementById("staff-list");
-
+                const container = document.getElementById('staff-list');
                 if (!data || data.length === 0) {
-                    container.innerHTML = "Không có nhân viên nào.";
+                    container.innerHTML = 'Không có nhân viên nào.';
                     return;
                 }
-                let html = "";
-                data.forEach(item => {
-                    const checked = assignedStaffIds.includes(item.id) ? "checked" : "";
-
-                    html += `
-                        <div>
-                            <label>
-                                <input type="checkbox" name="staffIds" value="${item.id}" ${checked}>
-                                ${item.fullName}
-                            </label>
-                        </div>
-                    `;
-                });
-
-                container.innerHTML = html;
+                container.innerHTML = data.map(item => {
+                    const checked = assignedStaffIds.includes(item.id) ? 'checked' : '';
+                    return `<label class="checkbox-item"><input type="checkbox" name="staffIds" value="${item.id}" ${checked}>${item.fullName}</label>`;
+                }).join('');
             })
-            .catch(error => {
-                document.getElementById("staff-list").innerHTML = "Lỗi: " + error.message;
-            });
+            .catch(error => document.getElementById('staff-list').innerHTML = 'Lỗi: ' + error.message);
     }
+
     function saveAssignment() {
-        if (!buildingId) {
-            alert("Không tìm thấy ID tòa nhà.");
-            return;
-        }
+        if (!buildingId) return alert('Không tìm thấy ID tòa nhà.');
+        const staffIds = Array.from(document.querySelectorAll('input[name="staffIds"]:checked')).map(item => parseInt(item.value));
 
-        const checkedStaff = document.querySelectorAll('input[name="staffIds"]:checked');
-        const staffIds = Array.from(checkedStaff).map(item => parseInt(item.value));
-
-        const data = {
-            buildingId: parseInt(buildingId),
-            staffIds: staffIds
-        };
-
-        fetch("http://localhost:8081/api/users/assign-building", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data)
+        fetch('/api/users/assign-building', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ buildingId: parseInt(buildingId), staffIds })
         })
             .then(response => response.text())
             .then(message => {
                 alert(message);
-                window.location.href = "/admin/building-list.html";
+                window.location.href = '/admin/building-list.html';
             })
-            .catch(error => {
-                alert("Có lỗi xảy ra: " + error.message);
-            });
+            .catch(error => alert('Có lỗi xảy ra: ' + error.message));
     }
 
     function loadAssignedStaff() {
         if (!buildingId) return Promise.resolve();
-
-        return fetch(`http://localhost:8081/api/users/assigned-staff/${buildingId}`)
+        return fetch(`/api/users/assigned-staff/${buildingId}`)
             .then(response => {
-                if (!response.ok) {
-                    throw new Error("Không tải được danh sách staff đã phân công");
-                }
+                if (!response.ok) throw new Error('Không tải được danh sách staff đã phân công');
                 return response.json();
             })
-            .then(data => {
-                assignedStaffIds = data || [];
-            })
-            .catch(error => {
-                alert("Lỗi tải phân công cũ: " + error.message);
-            });
+            .then(data => assignedStaffIds = data || [])
+            .catch(error => alert('Lỗi tải phân công cũ: ' + error.message));
     }
 
-    loadAssignedStaff().then(() => loadStaff());
+    loadAssignedStaff().then(loadStaff);
 </script>
 </body>
 </html>

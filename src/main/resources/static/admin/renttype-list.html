@@ -1,100 +1,95 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Rent type </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loại hình thuê</title>
+    <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
-<a href="/admin/dashboard.html">
-    <button type="button">Dashboard</button>
-</a>
-<button onclick="addRentType()">
-    Thêm loại hình thuê
-</button>
-<table>
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Mã loại hình thuê</th>
-        <th>Tên loại hình thuê</th>
-        <th>Thao tác</th>
-    </tr>
-    </thead>
-    <tbody id="result-table">
-    </tbody>
-</table>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html"><span class="brand-mark">A</span><span>Manager Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/dashboard.html">Dashboard</a>
+            <a class="btn btn-secondary" href="/admin/building-list.html">Tòa nhà</a>
+            <button class="btn" type="button" onclick="addRentType()">Thêm loại hình thuê</button>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Cấu hình thuê</span>
+                <h1 class="page-title">Loại hình thuê</h1>
+                <p class="subtitle">Quản lý danh mục loại hình thuê dùng để gán cho các tòa nhà.</p>
+            </div>
+            <span class="badge" id="rentTypeCount">Đang tải</span>
+        </section>
+
+        <section class="data-card">
+            <div class="data-header"><div><h2 class="section-title">Danh sách loại hình thuê</h2><p class="section-text">Mã loại và tên loại hình thuê đang có trong hệ thống.</p></div></div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>ID</th><th>Mã loại hình thuê</th><th>Tên loại hình thuê</th><th>Thao tác</th></tr></thead>
+                    <tbody id="result-table"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
 <script>
     function displayRentType() {
-        fetch("http://localhost:8081/api/renttype")
+        fetch('/api/renttype')
             .then(response => {
-                if (!response.ok) throw new Error("Loi" + response.status);
+                if (!response.ok) throw new Error('Lỗi ' + response.status);
                 return response.json();
             })
             .then(data => {
-                const tbody = document.getElementById("result-table");
+                const tbody = document.getElementById('result-table');
+                const count = document.getElementById('rentTypeCount');
                 tbody.innerHTML = '';
                 if (!data || data.length === 0) {
-                    tbody.innerHTML = `
-                  <tr>
-                    <td colspan="4">
-                      Khong co du lieu
-                    </td>
-                  </tr>
-                `;
+                    count.textContent = '0 loại';
+                    tbody.innerHTML = '<tr><td colspan="4">Không có dữ liệu</td></tr>';
                     return;
                 }
+                count.textContent = `${data.length} loại`;
                 data.forEach(item => {
-                    const row = document.createElement("tr");
+                    const row = document.createElement('tr');
                     row.innerHTML = `
-                  <td>${item.id}</td>
-                  <td>${item.code}</td>
-                  <td>${item.name}</td>
-                  <td>
-                       <button onclick="editRentType(${item.id})">Sửa</button>
-                       <button onclick="deleteRentType(${item.id})">Xóa</button>
-                  </td>
-                `;
+                        <td>${item.id}</td>
+                        <td>${item.code}</td>
+                        <td>${item.name}</td>
+                        <td><div class="table-actions">
+                            <button class="btn btn-compact" type="button" onclick="editRentType(${item.id})">Sửa</button>
+                            <button class="btn btn-danger btn-compact" type="button" onclick="deleteRentType(${item.id})">Xóa</button>
+                        </div></td>
+                    `;
                     tbody.appendChild(row);
                 });
-
             })
             .catch(error => {
-                console.error("Lỗi: " + error);
-                const tbody = document.getElementById('result-table');
-                tbody.innerHTML = `
-                        <tr>
-                            <td colspan="4">Không tải được dữ liệu </td>
-                        </tr>
-                    `;
+                document.getElementById('rentTypeCount').textContent = 'Lỗi tải';
+                document.getElementById('result-table').innerHTML = '<tr><td colspan="4">Không tải được dữ liệu</td></tr>';
+                console.error(error);
             });
     }
-    function editRentType(id){
-        alert("Sửa loại hình thuê có ID = " + id);
-        window.location.href = `/admin/renttype-adding.html?id=${id}`;
-    }
-    function deleteRentType(id){
-        const confirmed = confirm("Bạn có chắc muốn xoá không?");
-        if (!confirmed) return;
-
-        fetch(`http://localhost:8081/api/renttype/${id}`, {
-            method: "DELETE"
-        })
+    function editRentType(id) { window.location.href = `/admin/renttype-adding.html?id=${id}`; }
+    function deleteRentType(id) {
+        if (!confirm('Bạn có chắc muốn xoá không?')) return;
+        fetch(`/api/renttype/${id}`, { method: 'DELETE' })
             .then(response => {
-                if (!response.ok) throw new Error("Xoá thất bại");
+                if (!response.ok) throw new Error('Xoá thất bại');
                 return response.text();
             })
-            .then(data => {
-                alert("Xoá thành công");
-                displayRentType(); // reload lại bảng
-            })
-            .catch(error => {
-                alert("Lỗi: " + error.message);
-            });
+            .then(() => { alert('Xoá thành công'); displayRentType(); })
+            .catch(error => alert('Lỗi: ' + error.message));
     }
-    function addRentType(){
-        window.location.href = `/admin/renttype-adding.html`;
-    }
-    window.onload = displayRentType;
+    function addRentType() { window.location.href = '/admin/renttype-adding.html'; }
+    window.addEventListener('load', displayRentType);
 </script>
 </body>
 </html>

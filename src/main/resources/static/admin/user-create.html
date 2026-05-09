@@ -1,71 +1,76 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Title</title>
-  </head>
-  <body>
-    <a href="/admin/dashboard.html">
-      <button type="button">Dashboard</button>
-    </a>
-    <form id="user-form">
-      <label> Username </label>
-      <input type="text" id="username" required /><br />
-      <label> Password </label>
-      <input type="text" id="password" required /><br />
-      <label> FullName </label>
-      <input type="text" id="fullname" required /><br />
-      <label> Phone </label>
-      <input type="text" id="phone" required /><br />
-      <label> Email </label>
-      <input type="text" id="email" required /><br />
-      <label> Role </label>
-      <select id="role" name="role">
-        <option value="manager">Quản lý</option>
-        <option value="staff">Nhân viên</option>
-        <option value="customer">Khách hàng</option>
-      </select>
-      <button type="button" id="save-user">Lưu người dùng</button>
-    </form>
-  </body>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo tài khoản</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html"><span class="brand-mark">A</span><span>Manager Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/dashboard.html">Dashboard</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
 
-  <script>
-    document.getElementById("save-user").addEventListener("click", saveUser);
+    <main class="staff-page staff-page-narrow">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Tài khoản hệ thống</span>
+                <h1 class="page-title">Tạo người dùng mới</h1>
+                <p class="subtitle">Tạo tài khoản cho manager, staff hoặc customer.</p>
+            </div>
+        </section>
+
+        <section class="panel-card">
+            <div class="panel-header"><div><h2 class="section-title">Thông tin tài khoản</h2><p class="section-text">Username, password, họ tên và role là bắt buộc.</p></div></div>
+            <form class="admin-form-grid" id="user-form">
+                <div class="field"><label for="username">Username</label><input type="text" id="username" required></div>
+                <div class="field"><label for="password">Password</label><input type="text" id="password" required></div>
+                <div class="field"><label for="fullname">FullName</label><input type="text" id="fullname" required></div>
+                <div class="field"><label for="phone">Phone</label><input type="text" id="phone" required></div>
+                <div class="field"><label for="email">Email</label><input type="text" id="email" required></div>
+                <div class="field"><label for="role">Role</label><select id="role" name="role"><option value="manager">Quản lý</option><option value="staff">Nhân viên</option><option value="customer">Khách hàng</option></select></div>
+                <div class="admin-actions field-full"><button class="btn" type="button" id="save-user">Lưu người dùng</button></div>
+            </form>
+        </section>
+    </main>
+</div>
+
+<script>
+    document.getElementById('save-user').addEventListener('click', saveUser);
     async function saveUser() {
-      const userData = {
-        username: document.getElementById("username").value,
-        password: document.getElementById("password").value,
-        fullname: document.getElementById("fullname").value,
-        phone: document.getElementById("phone").value,
-        email: document.getElementById("email").value,
-        role: document.getElementById("role").value,
-      };
-      if (!userData.username || !userData.password || !userData.role || !userData.fullname ) {
-        alert("Vui lòng điền đầy đủ thông tin!");
-        return;
-      }
-      try {
-        const response = await fetch("http://localhost:8081/api/users", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(userData),
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Lỗi khi gửi dữ liệu: ${response.status} ${errorText}`);
+        const userData = {
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
+            fullname: document.getElementById('fullname').value,
+            phone: document.getElementById('phone').value,
+            email: document.getElementById('email').value,
+            role: document.getElementById('role').value
+        };
+        if (!userData.username || !userData.password || !userData.role || !userData.fullname) {
+            alert('Vui lòng điền đầy đủ thông tin!');
+            return;
         }
-
-        const result = await response.text();
-        alert("Tạo user thành công!");
-        console.log("Kết quả từ server:", result);
-        document.getElementById("user-form").reset();
-      } catch (error) {
-        console.error(error);
-        alert(error.message || "Không thể gửi dữ liệu đến server.");
-      }
+        try {
+            const response = await fetch('/api/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Lỗi khi gửi dữ liệu: ${response.status} ${errorText}`);
+            }
+            alert('Tạo user thành công!');
+            document.getElementById('user-form').reset();
+        } catch (error) {
+            alert(error.message || 'Không thể gửi dữ liệu đến server.');
+        }
     }
-  </script>
+</script>
+</body>
 </html>
