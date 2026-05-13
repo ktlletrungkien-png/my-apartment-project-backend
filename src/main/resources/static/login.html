@@ -52,11 +52,11 @@
     const params = new URLSearchParams(window.location.search);
     const messageBox = document.getElementById('messageBox');
 
-    if (params.get('error')) {
+    if (params.has('error')) {
         messageBox.textContent = 'Sai tên đăng nhập hoặc mật khẩu.';
     }
 
-    if (params.get('logout')) {
+    if (params.has('logout')) {
         messageBox.textContent = 'Bạn đã đăng xuất.';
         messageBox.classList.add('success');
     }

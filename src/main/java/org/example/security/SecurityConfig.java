@@ -45,12 +45,18 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/building/*").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/building/*/renttypes").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.PUT, "/api/building/renttypes").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/api/building/*/rentareas").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/api/building/*/rentareas").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.GET, "/api/renttype/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.POST, "/api/renttype").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.PUT, "/api/renttype/**").hasRole("MANAGER")
                         .requestMatchers(HttpMethod.DELETE, "/api/renttype/**").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.GET, "/api/transactiontype/**").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.POST, "/api/transactiontype").hasRole("MANAGER")
+                        .requestMatchers(HttpMethod.PUT, "/api/transactiontype/**").hasRole("MANAGER")
 
                         .requestMatchers("/api/users", "/api/users/**").hasRole("MANAGER")
+                        .requestMatchers("/api/manager/**").hasRole("MANAGER")
                         .requestMatchers("/api/staff/**").hasAnyRole("STAFF", "MANAGER")
 
                         .requestMatchers("/admin/**").hasRole("MANAGER")

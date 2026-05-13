@@ -3,6 +3,7 @@ package org.example.api;
 import org.example.entity.BuildingEntity;
 import org.example.model.BuildingDTO;
 import org.example.model.BuildingRentTypeRequest;
+import org.example.model.RentAreaRequest;
 import org.example.repository.BuildingRepository;
 import org.example.service.BuildingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,6 +97,21 @@ public class BuildingAPI {
             return "Thanh cong";
         }
         catch(Exception e){
+            return e.getMessage();
+        }
+    }
+
+    @GetMapping("/{id}/rentareas")
+    public List<Integer> getRentAreas(@PathVariable Long id) {
+        return buildingService.getRentAreas(id);
+    }
+
+    @PutMapping("/{id}/rentareas")
+    public String assignRentAreas(@PathVariable Long id, @RequestBody RentAreaRequest request) {
+        try {
+            buildingService.assignRentAreas(id, request.getRentAreas());
+            return "Cap nhat dien tich thue thanh cong";
+        } catch (Exception e) {
             return e.getMessage();
         }
     }

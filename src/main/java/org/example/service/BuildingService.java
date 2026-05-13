@@ -2,19 +2,23 @@ package org.example.service;
 
 import org.example.entity.BuildingEntity;
 import org.example.entity.BuildingRentTypeEntity;
+import org.example.entity.RentAreaEntity;
 import org.example.entity.RentTypeEntity;
 import org.example.model.BuildingDTO;
 import org.example.model.BuildingRentTypeRequest;
 import org.example.repository.BuildingRentTypeRepository;
 import org.example.repository.BuildingRepository;
+import org.example.repository.RentAreaRepository;
 import org.example.repository.RentTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +31,9 @@ public class BuildingService {
 
     @Autowired
     private RentTypeRepository rentTypeRepository;
+
+    @Autowired
+    private RentAreaRepository rentAreaRepository;
 
     @Transactional(readOnly = true)
     public List<BuildingDTO> findAll(Map<String, String> params) {
@@ -148,5 +155,45 @@ public class BuildingService {
             buildingRentTypeRepository.save(result);
         }
 
+    }
+
+    @Transactional(readOnly = true)
+    public List<Integer> getRentAreas(Long buildingId) {
+        buildingRepository.findById(buildingId)
+                .orElseThrow(() -> new RuntimeException("Khong tim thay toa nha"));
+
+        return rentAreaRepository.findByBuildingId(buildingId).stream()
+                .map(RentAreaEntity::getValue)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void assignRentAreas(Long buildingId, List<Integer> rentAreas) {
+        BuildingEntity building = buildingRepository.findById(buildingId)
+                .orElseThrow(() -> new RuntimeException("Khong tim thay toa nha"));
+
+        rentAreaRepository.deleteByBuildingId(buildingId);
+
+        if (rentAreas == null || rentAreas.isEmpty()) {
+            return;
+        }
+
+        Set<Integer> uniqueAreas = new LinkedHashSet<>();
+        for (Integer area : rentAreas) {
+            if (area == null) {
+                continue;
+            }
+            if (area <= 0) {
+                throw new RuntimeException("Dien tich thue phai lon hon 0");
+            }
+            uniqueAreas.add(area);
+        }
+
+        for (Integer area : uniqueAreas) {
+            RentAreaEntity rentArea = new RentAreaEntity();
+            rentArea.setBuilding(building);
+            rentArea.setValue(area);
+            rentAreaRepository.save(rentArea);
+        }
     }
 }

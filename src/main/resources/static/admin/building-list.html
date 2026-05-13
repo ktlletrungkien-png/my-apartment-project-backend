@@ -128,6 +128,7 @@
                             <div class="table-actions">
                                 <button class="btn btn-compact" type="button" onclick="editBuilding(${item.id})">Sửa</button>
                                 <button class="btn btn-compact" type="button" onclick="assignBuilding(${item.id})">Phân công</button>
+                                <button class="btn btn-secondary btn-compact" type="button" onclick="assignRentArea(${item.id})">Diện tích</button>
                                 <button class="btn btn-secondary btn-compact" type="button" onclick="assignRentType(${item.id})">Loại thuê</button>
                                 <button class="btn btn-danger btn-compact" type="button" onclick="deleteBuilding(${item.id})">Xóa</button>
                             </div>
@@ -161,6 +162,10 @@
 
     function assignBuilding(id) {
         window.location.href = `/admin/assign-building.html?id=${id}`;
+    }
+
+    function assignRentArea(id) {
+        window.location.href = `/admin/assign-rentarea.html?id=${id}`;
     }
 
     function assignRentType(id) {

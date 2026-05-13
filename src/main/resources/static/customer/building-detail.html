@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết tòa nhà</title>
+  <link rel="stylesheet" href="/css/public.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="building-search.html" aria-label="Trang tìm kiếm tòa nhà">
+    <span class="brand-mark">A</span>
+    <span>Apartment</span>
+  </a>
+  <div class="nav-actions">
+    <a class="btn btn-secondary" href="building-search.html">Danh sách</a>
+<!--    <a class="btn btn-primary" href="login.html">Đăng nhập</a>-->
+  </div>
+</header>
+
+<main class="page page-narrow">
+  <section class="detail-card">
+    <div class="detail-header">
+      <div>
+        <span class="eyebrow">Chi tiết tòa nhà</span>
+        <h1 class="page-title">Thông tin cho thuê</h1>
+        <p class="subtitle">Xem thông tin vận hành, giá thuê, diện tích và người phụ trách tòa nhà.</p>
+      </div>
+      <a class="btn btn-secondary" href="building-search.html">Quay lại danh sách</a>
+    </div>
+
+    <div id="detailContent">
+      <p class="no-data">Đang tải dữ liệu...</p>
+    </div>
+  </section>
+</main>
+
+<script>
+  function escapeHtml(value) {
+      return String(value ?? '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+  }
+
+  function detailItem(label, value, extraClass = '') {
+      const displayValue = value ?? 'N/A';
+      return `
+          <div class="detail-item ${extraClass}">
+              <span class="detail-label">${label}</span>
+              <span class="detail-value">${escapeHtml(displayValue)}</span>
+          </div>
+      `;
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const buildingId = urlParams.get('id');
+  const detailContent = document.getElementById('detailContent');
+
+  if (buildingId) {
+      fetch(`/api/building/${buildingId}`)
+          .then(res => {
+              if (!res.ok) {
+                  throw new Error('Không tìm thấy dữ liệu tòa nhà');
+              }
+              return res.json();
+          })
+          .then(data => {
+              const imageBlock = data.image
+                  ? `<img class="detail-image" src="${escapeHtml(data.image)}" alt="Hình ảnh ${escapeHtml(data.name || 'tòa nhà')}">`
+                  : '<span class="detail-value">Chưa có hình ảnh</span>';
+
+              detailContent.innerHTML = `
+                  <div class="detail-grid">
+                      <div class="detail-item full-width">
+                          <span class="detail-label">Tên tòa nhà</span>
+                          <span class="detail-value title">${escapeHtml(data.name || 'N/A')}</span>
+                      </div>
+
+                      <div class="detail-item full-width">
+                          <span class="detail-label">Địa chỉ</span>
+                          <span class="detail-value">${escapeHtml(data.address || 'N/A')}</span>
+                      </div>
+
+                      <div class="detail-item">
+                          <span class="detail-label">Giá thuê</span>
+                          <span class="detail-value price">${escapeHtml(data.rentPrice || 0)} triệu/m2</span>
+                      </div>
+
+                      ${detailItem('Diện tích thuê', `${data.rentAreas || 'N/A'} m2`)}
+                      ${detailItem('Số tầng hầm', data.numberOfBasement || 0)}
+                      ${detailItem('Diện tích sàn', `${data.floorArea || 0} m2`)}
+                      ${detailItem('Thời hạn thuê', data.rentTime)}
+                      ${detailItem('Đặt cọc', data.deposit)}
+                      ${detailItem('Thanh toán', data.payment)}
+                      ${detailItem('Phí môi giới', `${data.brokerageFee || 0} %`)}
+                      ${detailItem('Người quản lý', data.managerName)}
+                      ${detailItem('SĐT quản lý', data.managerPhoneNumber)}
+
+                      <div class="detail-item full-width">
+                          <span class="detail-label">Mô tả giá</span>
+                          <div class="detail-value detail-note">${escapeHtml(data.rentPriceDescription || 'Không có mô tả')}</div>
+                      </div>
+
+                      <div class="detail-item full-width">
+                          <span class="detail-label">Ghi chú</span>
+                          <div class="detail-value detail-note">${escapeHtml(data.note || 'Không có ghi chú')}</div>
+                      </div>
+
+                      <div class="detail-item full-width">
+                          <span class="detail-label">Hình ảnh</span>
+                          ${imageBlock}
+                      </div>
+                  </div>
+              `;
+          })
+          .catch(error => {
+              detailContent.innerHTML = `<p class="no-data">Lỗi: ${escapeHtml(error.message)}</p>`;
+          });
+  } else {
+      detailContent.innerHTML = '<p class="no-data">ID tòa nhà không hợp lệ.</p>';
+  }
+</script>
+</body>
+</html>
