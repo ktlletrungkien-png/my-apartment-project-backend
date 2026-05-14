@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý giao dịch</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html">
+            <span class="brand-mark">A</span>
+            <span>Manager Workspace</span>
+        </a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/dashboard.html">Dashboard</a>
+            <a class="btn btn-secondary" href="/admin/building-list.html">Tòa nhà</a>
+            <a class="btn btn-secondary" href="/admin/customer-list.html">Khách hàng</a>
+            <a class="btn btn-secondary" href="/admin/transactiontype-list.html">Loại giao dịch</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Theo dõi chăm sóc khách hàng</span>
+                <h1 class="page-title">Quản lý giao dịch</h1>
+                <p class="subtitle">Xem nhân viên nào đã thực hiện giao dịch nào với khách hàng, kèm loại giao dịch và nội dung ghi chú.</p>
+            </div>
+            <span class="badge" id="transactionCount">Đang tải</span>
+        </section>
+
+        <section class="panel-card">
+            <div class="panel-header">
+                <div>
+                    <h2 class="section-title">Bộ lọc tìm kiếm</h2>
+                    <p class="section-text">Có thể lọc theo nhân viên, khách hàng, loại giao dịch hoặc nội dung.</p>
+                </div>
+            </div>
+            <div class="admin-form-grid">
+                <div class="field"><label for="staffName">Nhân viên</label><input type="text" id="staffName" placeholder="Tên nhân viên"></div>
+                <div class="field"><label for="customerName">Khách hàng</label><input type="text" id="customerName" placeholder="Tên khách hàng"></div>
+                <div class="field">
+                    <label for="transactionTypeId">Loại giao dịch</label>
+                    <select id="transactionTypeId"><option value="">Tất cả</option></select>
+                </div>
+                <div class="field"><label for="note">Nội dung</label><input type="text" id="note" placeholder="Từ khóa ghi chú"></div>
+                <div class="admin-actions field-full">
+                    <button class="btn" type="button" onclick="loadTransactions()">Tìm kiếm</button>
+                    <button class="btn btn-secondary" type="button" onclick="resetSearch()">Làm mới</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="data-card">
+            <div class="data-header">
+                <div>
+                    <h2 class="section-title">Danh sách giao dịch</h2>
+                    <p class="section-text">Các giao dịch cũ chưa có staffid sẽ hiển thị là Chưa xác định.</p>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nhân viên</th>
+                        <th>Khách hàng</th>
+                        <th>Loại giao dịch</th>
+                        <th>Nội dung</th>
+                    </tr>
+                    </thead>
+                    <tbody id="transactionTable"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    function resetSearch() {
+        ['staffName', 'customerName', 'transactionTypeId', 'note'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+        loadTransactions();
+    }
+
+    function loadTransactionTypes() {
+        fetch('/api/transactiontype')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('transactionTypeId');
+                select.innerHTML = '<option value="">Tất cả</option>';
+                (data || []).forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = item.name;
+                    select.appendChild(option);
+                });
+            });
+    }
+
+    function loadTransactions() {
+        const queryParams = new URLSearchParams();
+        ['staffName', 'customerName', 'transactionTypeId', 'note'].forEach(id => {
+            const value = document.getElementById(id).value.trim();
+            if (value) queryParams.append(id, value);
+        });
+
+        fetch(`/api/manager/transactions?${queryParams.toString()}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Không tải được danh sách giao dịch');
+                return response.json();
+            })
+            .then(data => {
+                const tbody = document.getElementById('transactionTable');
+                const count = document.getElementById('transactionCount');
+                tbody.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    count.textContent = '0 giao dịch';
+                    tbody.innerHTML = '<tr><td colspan="5">Không có giao dịch phù hợp</td></tr>';
+                    return;
+                }
+
+                count.textContent = `${data.length} giao dịch`;
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.id ?? ''}</td>
+                        <td>${item.staffName ?? 'Chưa xác định'}</td>
+                        <td>${item.customerName ?? ''}</td>
+                        <td>${item.transactionTypeName ?? ''}</td>
+                        <td>${item.note ?? ''}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                document.getElementById('transactionCount').textContent = 'Lỗi tải';
+                document.getElementById('transactionTable').innerHTML = '<tr><td colspan="5">Không tải được dữ liệu giao dịch</td></tr>';
+                alert(error.message);
+            });
+    }
+
+    window.addEventListener('load', () => {
+        loadTransactionTypes();
+        loadTransactions();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý diện tích thuê</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html"><span class="brand-mark">A</span><span>Manager Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/building-list.html">Quay lại tòa nhà</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page staff-page-narrow">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Cấu hình tòa nhà</span>
+                <h1 class="page-title">Quản lý diện tích thuê</h1>
+                <p class="subtitle" id="buildingName">Đang tải thông tin tòa nhà...</p>
+            </div>
+        </section>
+
+        <section class="panel-card">
+            <div class="panel-header">
+                <div>
+                    <h2 class="section-title">Danh sách diện tích</h2>
+                    <p class="section-text">Nhập các diện tích đang cho thuê theo đơn vị m2.</p>
+                </div>
+            </div>
+
+            <div class="admin-form-grid" id="rentarea-list"></div>
+
+            <div class="admin-actions admin-panel-actions">
+                <button class="btn btn-secondary" type="button" onclick="addRentAreaInput()">Thêm diện tích</button>
+                <button class="btn" type="button" onclick="saveRentAreas()">Lưu</button>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const buildingId = urlParams.get('id');
+
+    function createRentAreaRow(value = '') {
+        const row = document.createElement('div');
+        row.className = 'field field-full';
+        row.innerHTML = `
+            <label>Diện tích thuê</label>
+            <div class="table-actions">
+                <input type="number" min="1" class="rentarea-input" value="${value}" placeholder="Ví dụ: 100">
+                <button class="btn btn-danger btn-compact" type="button" onclick="removeRentAreaInput(this)">Xóa</button>
+            </div>
+        `;
+        return row;
+    }
+
+    function addRentAreaInput(value = '') {
+        document.getElementById('rentarea-list').appendChild(createRentAreaRow(value));
+    }
+
+    function removeRentAreaInput(button) {
+        button.closest('.field').remove();
+        if (document.querySelectorAll('.rentarea-input').length === 0) {
+            addRentAreaInput();
+        }
+    }
+
+    async function loadRentAreas() {
+        if (!buildingId) {
+            alert('Không tìm thấy buildingId');
+            window.location.href = '/admin/building-list.html';
+            return;
+        }
+
+        try {
+            const [buildingResponse, rentAreaResponse] = await Promise.all([
+                fetch(`/api/building/${buildingId}`),
+                fetch(`/api/building/${buildingId}/rentareas`)
+            ]);
+
+            if (!buildingResponse.ok) throw new Error('Không tải được thông tin tòa nhà');
+            if (!rentAreaResponse.ok) throw new Error('Không tải được diện tích thuê');
+
+            const building = await buildingResponse.json();
+            const rentAreas = await rentAreaResponse.json();
+
+            document.getElementById('buildingName').textContent = building.name
+                ? `Tòa nhà: ${building.name}`
+                : 'Tòa nhà đang chọn';
+
+            const container = document.getElementById('rentarea-list');
+            container.innerHTML = '';
+
+            if (!rentAreas || rentAreas.length === 0) {
+                addRentAreaInput();
+                return;
+            }
+
+            rentAreas.forEach(value => addRentAreaInput(value));
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    function saveRentAreas() {
+        const rentAreas = Array.from(document.querySelectorAll('.rentarea-input'))
+            .map(input => input.value.trim())
+            .filter(value => value !== '')
+            .map(value => Number(value));
+
+        if (rentAreas.some(value => !Number.isInteger(value) || value <= 0)) {
+            alert('Diện tích thuê phải là số nguyên lớn hơn 0');
+            return;
+        }
+
+        fetch(`/api/building/${buildingId}/rentareas`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rentAreas })
+        })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                window.location.href = '/admin/building-list.html';
+            })
+            .catch(error => alert('Có lỗi xảy ra: ' + error.message));
+    }
+
+    window.addEventListener('load', loadRentAreas);
+</script>
+</body>
+</html>

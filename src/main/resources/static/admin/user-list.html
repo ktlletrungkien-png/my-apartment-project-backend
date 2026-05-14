@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách người dùng</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html"><span class="brand-mark">A</span><span>Manager Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/dashboard.html">Dashboard</a>
+            <a class="btn btn-secondary" href="/admin/building-list.html">Tòa nhà</a>
+            <a class="btn btn-secondary" href="/admin/customer-list.html">Khách hàng</a>
+            <a class="btn" href="/admin/user-create.html">Tạo tài khoản</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Tài khoản hệ thống</span>
+                <h1 class="page-title">Danh sách người dùng</h1>
+                <p class="subtitle">Theo dõi tài khoản manager, staff và customer đang có trong hệ thống.</p>
+            </div>
+            <span class="badge" id="userCount">Đang tải</span>
+        </section>
+
+        <section class="panel-card">
+            <div class="panel-header">
+                <div>
+                    <h2 class="section-title">Bộ lọc tìm kiếm</h2>
+                    <p class="section-text">Lọc nhanh theo username, họ tên, role hoặc trạng thái.</p>
+                </div>
+            </div>
+            <div class="admin-form-grid">
+                <div class="field"><label for="keyword">Từ khóa</label><input type="text" id="keyword" placeholder="Username, họ tên, email, SĐT"></div>
+                <div class="field">
+                    <label for="role">Role</label>
+                    <select id="role">
+                        <option value="">Tất cả</option>
+                        <option value="manager">Manager</option>
+                        <option value="staff">Staff</option>
+                        <option value="customer">Customer</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="status">Trạng thái</label>
+                    <select id="status">
+                        <option value="">Tất cả</option>
+                        <option value="1">Đang hoạt động</option>
+                        <option value="0">Ngừng hoạt động</option>
+                    </select>
+                </div>
+                <div class="admin-actions field-full">
+                    <button class="btn" type="button" onclick="applyFilters()">Tìm kiếm</button>
+                    <button class="btn btn-secondary" type="button" onclick="resetFilters()">Làm mới</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="data-card">
+            <div class="data-header">
+                <div>
+                    <h2 class="section-title">Người dùng</h2>
+                    <p class="section-text">Mật khẩu không hiển thị trên danh sách để tránh lộ thông tin nhạy cảm.</p>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Họ tên</th>
+                        <th>Role</th>
+                        <th>SĐT</th>
+                        <th>Email</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                    </thead>
+                    <tbody id="user-table"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    let users = [];
+
+    function loadUsers() {
+        fetch('/api/users')
+            .then(response => {
+                if (!response.ok) throw new Error('Không tải được danh sách người dùng');
+                return response.json();
+            })
+            .then(data => {
+                users = data || [];
+                renderUsers(users);
+            })
+            .catch(error => {
+                document.getElementById('userCount').textContent = 'Lỗi tải';
+                document.getElementById('user-table').innerHTML = `<tr><td colspan="7">Lỗi: ${error.message}</td></tr>`;
+            });
+    }
+
+    function applyFilters() {
+        const keyword = document.getElementById('keyword').value.trim().toLowerCase();
+        const role = document.getElementById('role').value;
+        const status = document.getElementById('status').value;
+
+        const filtered = users.filter(user => {
+            const text = [
+                user.username,
+                user.fullname,
+                user.phone,
+                user.email
+            ].join(' ').toLowerCase();
+            const matchKeyword = !keyword || text.includes(keyword);
+            const matchRole = !role || user.role === role;
+            const matchStatus = status === '' || String(user.status) === status;
+            return matchKeyword && matchRole && matchStatus;
+        });
+
+        renderUsers(filtered);
+    }
+
+    function resetFilters() {
+        document.getElementById('keyword').value = '';
+        document.getElementById('role').value = '';
+        document.getElementById('status').value = '';
+        renderUsers(users);
+    }
+
+    function renderUsers(data) {
+        const tbody = document.getElementById('user-table');
+        const count = document.getElementById('userCount');
+        tbody.innerHTML = '';
+
+        if (!data || data.length === 0) {
+            count.textContent = '0 người dùng';
+            tbody.innerHTML = '<tr><td colspan="7">Không có người dùng phù hợp</td></tr>';
+            return;
+        }
+
+        count.textContent = `${data.length} người dùng`;
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.id ?? ''}</td>
+                <td>${item.username ?? ''}</td>
+                <td>${item.fullname ?? ''}</td>
+                <td>${formatRole(item.role)}</td>
+                <td>${item.phone ?? ''}</td>
+                <td>${item.email ?? ''}</td>
+                <td>${item.status === 1 ? 'Đang hoạt động' : 'Ngừng hoạt động'}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function formatRole(role) {
+        if (role === 'manager') return 'Manager';
+        if (role === 'staff') return 'Staff';
+        if (role === 'customer') return 'Customer';
+        return role || '';
+    }
+
+    window.addEventListener('load', loadUsers);
+</script>
+</body>
+</html>

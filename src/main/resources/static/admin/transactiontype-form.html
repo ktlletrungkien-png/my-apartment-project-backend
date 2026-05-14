@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm/sửa loại giao dịch</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html"><span class="brand-mark">A</span><span>Manager Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/transactiontype-list.html">Quay lại loại giao dịch</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page staff-page-narrow">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Loại giao dịch</span>
+                <h1 class="page-title" id="form-title">Thêm loại giao dịch</h1>
+                <p class="subtitle">Tạo hoặc cập nhật mã loại giao dịch dùng khi staff ghi nhận chăm sóc khách hàng.</p>
+            </div>
+        </section>
+
+        <section class="panel-card">
+            <div class="panel-header">
+                <div>
+                    <h2 class="section-title">Thông tin loại giao dịch</h2>
+                    <p class="section-text">Mã loại và tên loại là bắt buộc.</p>
+                </div>
+            </div>
+            <form class="admin-form-grid">
+                <div class="field"><label for="code">Mã loại</label><input id="code"></div>
+                <div class="field"><label for="name">Tên loại giao dịch</label><input id="name"></div>
+                <div class="admin-actions field-full">
+                    <button class="btn" type="button" id="save-transaction-type">Thêm</button>
+                    <a class="btn btn-secondary" href="/admin/transactiontype-list.html">Quay lại</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const transactionTypeId = urlParams.get('id');
+
+    if (transactionTypeId) {
+        document.getElementById('form-title').innerText = 'Sửa loại giao dịch';
+        document.getElementById('save-transaction-type').innerText = 'Cập nhật';
+    }
+
+    document.getElementById('save-transaction-type').addEventListener('click', saveTransactionType);
+    loadTransactionTypeDetail();
+
+    function loadTransactionTypeDetail() {
+        if (!transactionTypeId) return;
+
+        fetch(`/api/transactiontype/${transactionTypeId}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Không tải được loại giao dịch');
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('code').value = data.code ?? '';
+                document.getElementById('name').value = data.name ?? '';
+            })
+            .catch(error => alert(error.message));
+    }
+
+    function saveTransactionType() {
+        const code = document.getElementById('code').value.trim();
+        const name = document.getElementById('name').value.trim();
+
+        if (!code) return alert('Mã loại là trường bắt buộc');
+        if (!name) return alert('Tên loại là trường bắt buộc');
+
+        fetch(transactionTypeId ? `/api/transactiontype/${transactionTypeId}` : '/api/transactiontype', {
+            method: transactionTypeId ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code, name })
+        })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                window.location.href = '/admin/transactiontype-list.html';
+            })
+            .catch(error => alert('Có lỗi xảy ra: ' + error.message));
+    }
+</script>
+</body>
+</html>

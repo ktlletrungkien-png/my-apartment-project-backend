@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loại giao dịch</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html"><span class="brand-mark">A</span><span>Manager Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/dashboard.html">Dashboard</a>
+            <a class="btn btn-secondary" href="/admin/transaction-list.html">Giao dịch</a>
+            <button class="btn" type="button" onclick="addTransactionType()">Thêm loại giao dịch</button>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Cấu hình giao dịch</span>
+                <h1 class="page-title">Loại giao dịch</h1>
+                <p class="subtitle">Quản lý danh mục loại giao dịch dùng khi staff ghi nhận chăm sóc khách hàng.</p>
+            </div>
+            <span class="badge" id="transactionTypeCount">Đang tải</span>
+        </section>
+
+        <section class="data-card">
+            <div class="data-header">
+                <div>
+                    <h2 class="section-title">Danh sách loại giao dịch</h2>
+                    <p class="section-text">Mã loại và tên loại giao dịch đang có trong hệ thống.</p>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr><th>ID</th><th>Mã loại</th><th>Tên loại giao dịch</th><th>Thao tác</th></tr>
+                    </thead>
+                    <tbody id="result-table"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    function displayTransactionTypes() {
+        fetch('/api/transactiontype')
+            .then(response => {
+                if (!response.ok) throw new Error('Lỗi ' + response.status);
+                return response.json();
+            })
+            .then(data => {
+                const tbody = document.getElementById('result-table');
+                const count = document.getElementById('transactionTypeCount');
+                tbody.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    count.textContent = '0 loại';
+                    tbody.innerHTML = '<tr><td colspan="4">Không có dữ liệu</td></tr>';
+                    return;
+                }
+
+                count.textContent = `${data.length} loại`;
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.id ?? ''}</td>
+                        <td>${item.code ?? ''}</td>
+                        <td>${item.name ?? ''}</td>
+                        <td><div class="table-actions">
+                            <button class="btn btn-compact" type="button" onclick="editTransactionType(${item.id})">Sửa</button>
+                        </div></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                document.getElementById('transactionTypeCount').textContent = 'Lỗi tải';
+                document.getElementById('result-table').innerHTML = '<tr><td colspan="4">Không tải được dữ liệu</td></tr>';
+                console.error(error);
+            });
+    }
+
+    function editTransactionType(id) {
+        window.location.href = `/admin/transactiontype-form.html?id=${id}`;
+    }
+
+    function addTransactionType() {
+        window.location.href = '/admin/transactiontype-form.html';
+    }
+
+    window.addEventListener('load', displayTransactionTypes);
+</script>
+</body>
+</html>
